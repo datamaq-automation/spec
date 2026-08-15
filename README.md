@@ -1,6 +1,6 @@
 # 📐 Plantilla de SRS & Especificaciones Técnicas (FastAPI + Clean Architecture)
 
-Este repositorio provee las herramientas y plantillas estándar para diseñar y validar proyectos backend en Python utilizando **FastAPI**, **Clean Architecture (Puertos y Adaptadores)** y principios de **Domain-Driven Design (DDD)**.
+Este repositorio provee las herramientas y plantillas estándar para diseñar, gobernar y validar proyectos backend en Python utilizando **FastAPI**, **Clean Architecture (Puertos y Adaptadores)** y principios de **Domain-Driven Design (DDD)** para el ecosistema DataMaq.
 
 ---
 
@@ -66,8 +66,20 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 
 | Archivo | Descripción |
 | :--- | :--- |
-| **[`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md)** | Plantilla de especificación de requisitos (SRS) y diseño técnico en 8 secciones con placeholders `{reemplazar_...}`. |
+| **[`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md)** | Plantilla rectora SSOT (Single Source of Truth) en 5 secciones modulares con placeholders `{reemplazar_...}`. |
 | **[`test_architecture.py`](file:///home/agustin/proyectos_software/spec/test_architecture.py)** | Suite de pruebas de conformidad arquitectónica mediante análisis estático AST (compatible con Pytest y ejecución CLI sin dependencias externas). |
+
+---
+
+## 🧱 Estructura Modular de 5 Secciones de la Plantilla SSOT
+
+| Sección | Descripción |
+| :--- | :--- |
+| **1. Contexto Estratégico & Propuesta de Valor** | Foco de mercado, Buyer/User Personas, Trinomio "Fierros + Datos + Dinero", Operaciones y Agenda. |
+| **2. Modelo de Negocio Canvas (BMC 9 Bloques)** | Matriz visual de 9 bloques, Organigrama de Agentes IA y Escalera de Conversión (Financiación cruzada). |
+| **3. Requisitos del Sistema (SRS)** | Requisitos Funcionales (FR-01 al FR-xx) y No Funcionales (NFR-01 al NFR-xx: rendimiento, concurrencia, seguridad). |
+| **4. Stack Tecnológico, Arquitectura & Convenciones** | Clean Architecture (4 capas), Estructura Canónica, APIs, Schemas y **Las 6 Reglas Innegociables**. |
+| **5. Gobernanza Normativa, Calidad & Matriz de Pruebas** | Marco ISO 9001 / ISO 27001 y Batería de verificación automatizada (`ruff`, `pyright`, AST `test_architecture.py`, `pytest`). |
 
 ---
 
@@ -94,35 +106,23 @@ python3 tests/test_architecture.py
 
 ---
 
-## 🧱 Estructura de Secciones de la Plantilla SRS
-
-| Sección | Descripción |
-| :--- | :--- |
-| **1. Introducción y Visión General** | Propósito, alcance, exclusiones (*Out of Scope*) y roles/actores del sistema. |
-| **2. Requisitos del Sistema (SRS)** | Requisitos funcionales (FR) y no funcionales (NFR: latencia, throughput, SLA, seguridad). |
-| **3. Stack Tecnológico & Convenciones** | Tecnologías base (FastAPI, Pydantic v2, SQLAlchemy 2.0, etc.) y reglas de dependencia. |
-| **4. Estructura de Directorios** | Árbol de carpetas estándar (`domain`, `application`, `adapters`, `infrastructure`). |
-| **5. Especificaciones Técnicas** | Modelado de dominio (entidades, Value Objects, puertos) y casos de uso con DTOs. |
-| **6. Diseño de APIs & Integraciones** | Endpoints REST, esquemas de entrada/salida y códigos de error HTTP. |
-| **7. Persistencia & Base de Datos** | Esquemas SQL/DDL, índices y modelos ORM. |
-| **8. Estrategia de Testing y Calidad** | Pirámide de pruebas (Unit, Integration, E2E, Architecture) y herramientas de análisis estático. |
-
----
-
 ## 🚀 Cómo Usar en un Proyecto Nuevo
 
 1. **Descargar los archivos:** Usa los comandos de descarga rápida de arriba para traer la spec a `docs/` y el validador a `tests/`.
-2. **Completar los Placeholders:** Reemplaza `{...}` en [`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md) con las reglas y diseño específicos de tu producto.
+2. **Completar los Placeholders:** Reemplaza `{...}` en [`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md) con las reglas y diseño específicos de tu producto (ej. webapp, telemetría IoT o microservicio).
 3. **Desarrollar y Validar Continuamente:**
    ```bash
-   # Linter y Formato
+   # 1. Linter y Formato
    ruff check .
    ruff format --check .
 
-   # Chequeo de Tipos Estricto
+   # 2. Chequeo de Tipos Estricto
    pyright
 
-   # Pruebas Unitarias, Integración y de Arquitectura
+   # 3. Validación AST de Arquitectura
+   python3 tests/test_architecture.py
+
+   # 4. Suite Completa de Tests
    pytest
    ```
 
