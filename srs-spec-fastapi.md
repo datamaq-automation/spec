@@ -238,13 +238,26 @@
 
 ## 5. Gobernanza Normativa, Calidad & Matriz de Pruebas
 
-### 5.1. Estándares de Calidad de Software
-* **Marco de Referencia:** Alineación con buenas prácticas de calidad de software (ISO/IEC 25010 para calidad de producto, ISO/IEC 27001 para seguridad).
+### 5.1. Filosofía de Desarrollo Asistido por Agentes IA ("The Constraint Gauntlet")
+> *"Mi estrategia actual es no leer el código generado por mis agentes. Lo que hago en su lugar es rodearlos de **restricciones extremas**: Unit tests, QA procedures, métricas de calidad, mutation testing, coverage... Tengo muy alta confianza en el código porque tiene que superar todo mi guantelete de restricciones."*  
+> — **Robert C. Martin ("Uncle Bob")**
+
+Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro de un marco de verificación estricto, automatizado y determinista donde ningún código se fusiona a producción sin superar el 100% de los invariantes formales.
+
+### 5.2. Las 5 Baterías del Guantelete (`tests/test_architecture.py`)
+1. **`test_init_files_must_be_empty`:** Comprueba que todos los `__init__.py` en `src/` y `tests/` tengan exactamente 0 bytes (sin código, docstrings ni imports).
+2. **`test_clean_architecture_compliance`:** Valida la regla de dependencia de capas (Domain puro, Application desacoplada, Adapters agnósticos, Routers delgados).
+3. **`test_no_relative_imports`:** Prohíbe imports relativos en `src/` (`from . import ...` o `from .. import ...`), obligando al uso de imports absolutos (`from src...`).
+4. **`test_all_functions_have_type_annotations`:** Exige que el 100% de las funciones en `src/domain` y `src/application` declaren Type Hints en todos sus parámetros y tipo de retorno.
+5. **`test_no_hardcoded_secrets`:** Detecta y bloquea contraseñas, tokens JWT, API keys o connection strings quemadas en código fuente.
+
+### 5.3. Estándares de Calidad & Trazabilidad
+* **Marco de Referencia:** Alineación con buenas prácticas de calidad de producto (ISO/IEC 25010) y seguridad de la información (ISO/IEC 27001).
 * **Trazabilidad de Cambios:** Commits bajo la convención estándar [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`).
 
-### 5.2. Matriz de Verificación Automatizada Previa a Despliegues
+### 5.4. Matriz de Verificación Automatizada Previa a Despliegues
 
-Todos los cambios deben superar el 100% de la siguiente batería de verificación antes de integrarse a la rama principal o desplegarse a producción:
+Todos los cambios deben superar el 100% de la siguiente batería de comandos antes de integrarse a la rama principal o desplegarse a producción:
 
 ```bash
 # 1. Linter y Verificación de Formato
@@ -254,9 +267,9 @@ ruff format --check .
 # 2. Análisis Estático de Tipos Estricto
 pyright
 
-# 3. Validación de Conformidad Arquitectónica y __init__.py Vacíos (AST)
+# 3. Validación de Arquitectura y Guantelete de Restricciones (AST)
 python3 tests/test_architecture.py
 
-# 4. Ejecución de la Suite Completa de Pruebas (Pytest)
+# 4. Suite Completa de Pruebas en Pytest (Unit, Integration, E2E y Gauntlet)
 pytest --maxfail=1 --disable-warnings -v
 ```

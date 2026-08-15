@@ -98,23 +98,34 @@ La plantilla especifica el patrón canónico para la capa de infraestructura de 
 
 ---
 
-## 🧪 Validador de Arquitectura (`test_architecture.py`)
+## 🛡️ Filosofía: El Guantelete de Restricciones Extremas (*The Constraint Gauntlet*)
 
-El archivo [`test_architecture.py`](file:///home/agustin/proyectos_software/spec/test_architecture.py) analiza el AST de todos los archivos en `src/` y `tests/` para garantizar el 100% de cumplimiento de:
+> *"Mi estrategia actual es no leer el código generado por mis agentes. Lo que hago en su lugar es rodearlos de **restricciones extremas**: Unit tests, QA procedures, métricas de calidad, mutation testing, coverage... Al final, tengo una confianza altísima en el código porque tuvo que superar todo mi guantelete de restricciones."*  
+> — **Robert C. Martin ("Uncle Bob")**
 
-1. **`test_init_files_must_be_empty()`:** Verifica que el 100% de los archivos `__init__.py` tengan exactamente 0 bytes (sin imports, lógica o docstrings) para evitar dependencias circulares.
+Este repositorio implementa esa filosofía mediante un pipeline automatizado y determinista donde los agentes de IA y los desarrolladores deben superar el 100% de las pruebas estáticas de arquitectura antes de que el código sea aceptado.
+
+---
+
+## 🧪 Las 5 Baterías del Guantelete (`test_architecture.py`)
+
+El archivo [`test_architecture.py`](file:///home/agustin/proyectos_software/spec/test_architecture.py) analiza el Árbol de Sintaxis Abstracta (AST) de todos los archivos en `src/` y `tests/` con **cero dependencias externas**:
+
+1. **`test_init_files_must_be_empty()`:** Comprueba que el 100% de los archivos `__init__.py` tengan exactamente 0 bytes (sin código, docstrings o imports) para prevenir dependencias circulares.
 2. **`test_clean_architecture_compliance()`:**
    - **Domain (`src/domain`):** Núcleo puro. Prohibido importar `application`, `adapters`, `infrastructure`, frameworks web (`FastAPI`) y librerías de BD/IO (`SQLAlchemy`, `pymysql`, `redis`, etc.).
    - **Application (`src/application`):** Casos de uso. Prohibido importar `adapters`, `infrastructure`, frameworks web y ORMs.
    - **Adapters (`src/adapters`):** Agnosticismo web. Prohibido importar `infrastructure` ni `fastapi`/`starlette`.
    - **Thin Controllers (`src/infrastructure/fastapi/routers`):** Prohibido importar ORMs directamente en endpoints.
-   - **Imports Absolutos:** Prohibidos imports relativos (`from . import ...` o `from .. import ...`). Todos deben ser `from src...`.
+3. **`test_no_relative_imports()`:** Prohíbe imports relativos en `src/` (`from . import ...` o `from .. import ...`), exigiendo imports absolutos (`from src...`).
+4. **`test_all_functions_have_type_annotations()`:** Exige que el 100% de las funciones y métodos en `src/domain` y `src/application` declaren Type Hints explícitos en parámetros y retorno (`-> Type`).
+5. **`test_no_hardcoded_secrets()`:** Escanea y bloquea contraseñas, tokens JWT, API keys o connection strings quemadas en código fuente.
 
 ### Modos de Ejecución:
 
 ```bash
-# Como suite de pruebas en Pytest (ambos tests automáticos)
-pytest tests/test_architecture.py
+# Como suite de pruebas en Pytest (las 5 suites automáticas)
+pytest tests/test_architecture.py -v
 
 # O como script CLI autónomo (zero-dependencies adicionales)
 python3 tests/test_architecture.py
