@@ -196,8 +196,10 @@ CREATE TABLE `{reemplazar_tabla_principal}` (
 
 
 * **E2E / API Tests (`tests/e2e/`):**
-* Pruebas de endpoints FastAPI utilizando `httpx.AsyncClient` y base de datos de test efímera.
+  * Pruebas de endpoints FastAPI utilizando `httpx.AsyncClient` y base de datos de test efímera.
 
+* **Pruebas de Conformidad Arquitectónica (`tests/test_architecture.py`):**
+  * Validación estática mediante AST para garantizar el 100% de cumplimiento de las reglas de capas (Clean Architecture y DDD), prohibición de imports relativos y verificación de archivos `__init__.py` vacíos.
 
 * **Comandos de Verificación:**
 ```bash

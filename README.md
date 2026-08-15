@@ -1,68 +1,100 @@
 # 📐 Plantilla de SRS & Especificaciones Técnicas (FastAPI + Clean Architecture)
 
-Este repositorio contiene la plantilla estándar de **Especificación de Requisitos de Software (SRS)** y **Especificaciones Técnicas de Diseño** para proyectos backend desarrollados en Python utilizando **FastAPI**, **Clean Architecture (Puertos y Adaptadores)** y principios de **Domain-Driven Design (DDD)**.
+Este repositorio provee las herramientas y plantillas estándar para diseñar y validar proyectos backend en Python utilizando **FastAPI**, **Clean Architecture (Puertos y Adaptadores)** y principios de **Domain-Driven Design (DDD)**.
 
 ---
 
-## 📥 Descargar la Plantilla Directamente (Sin clonar el repo)
+## 📥 Descarga Rápida (Sin clonar el repositorio)
 
-Si deseas incorporar únicamente el archivo de especificación en un proyecto existente, ejecuta el comando correspondiente según tu entorno de terminal:
+Puedes incorporar los archivos directamente en tu proyecto existente ejecutando los siguientes comandos en tu terminal:
 
-### 🐧 Linux / macOS (Bash / Zsh)
+### 1️⃣ Descargar la Especificación SRS (`srs-spec-fastapi.md`)
 
-**Con `curl`:**
+#### 🐧 Linux / macOS (Bash / Zsh)
 ```bash
+# En la raíz del proyecto
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md -o srs-spec-fastapi.md
-```
 
-**Con `wget`:**
-```bash
-wget -O srs-spec-fastapi.md https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md
-```
-
-**Descargar directamente en carpeta `docs/`:**
-```bash
+# O directamente dentro de docs/
 mkdir -p docs && curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md -o docs/srs-spec-fastapi.md
 ```
 
----
-
-### 🪟 Windows (PowerShell)
-
-**Con `Invoke-WebRequest`:**
+#### 🪟 Windows (PowerShell)
 ```powershell
+# En la raíz del proyecto
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md" -OutFile "srs-spec-fastapi.md"
-```
 
-**Sintaxis corta (`iwr`):**
-```powershell
-iwr "https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md" -OutFile "srs-spec-fastapi.md"
-```
-
-**Descargar directamente en carpeta `docs/`:**
-```powershell
+# O directamente dentro de docs/
 if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md" -OutFile "docs/srs-spec-fastapi.md"
 ```
 
 ---
 
-## 🎯 Propósito
+### 2️⃣ Descargar el Test de Arquitectura Limpia (`test_architecture.py`)
 
-El objetivo de esta plantilla ([`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md)) es servir como guía unificada y contrato técnico previo a la implementación. Facilita:
-- Definir con claridad el alcance, actores y requerimientos funcionales (FR) y no funcionales (NFR).
-- Estandarizar la arquitectura y estructura de carpetas modular y desacoplada.
-- Especificar contratos de API, modelos de dominio, casos de uso y esquemas de base de datos antes de escribir código.
-- Garantizar buenas prácticas de calidad de código, tipado estricto y testing.
+#### 🐧 Linux / macOS (Bash / Zsh)
+```bash
+# Descargar dentro de tests/
+mkdir -p tests && curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/test_architecture.py -o tests/test_architecture.py
+```
+
+#### 🪟 Windows (PowerShell)
+```powershell
+# Descargar dentro de tests/
+if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/test_architecture.py" -OutFile "tests/test_architecture.py"
+```
+
+---
+
+### ⚡ Descargar ambos archivos de una sola vez
+
+#### 🐧 Linux / macOS (Bash / Zsh)
+```bash
+mkdir -p docs tests && \
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md -o docs/srs-spec-fastapi.md && \
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/test_architecture.py -o tests/test_architecture.py
+```
+
+#### 🪟 Windows (PowerShell)
+```powershell
+if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md" -OutFile "docs/srs-spec-fastapi.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/test_architecture.py" -OutFile "tests/test_architecture.py"
+```
 
 ---
 
 ## 📂 Contenido del Repositorio
 
-- **[`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md)**: Plantilla completa estructurada en 8 secciones clave con placeholders `{reemplazar_...}` listos para completar según las necesidades del proyecto.
+| Archivo | Descripción |
+| :--- | :--- |
+| **[`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md)** | Plantilla de especificación de requisitos (SRS) y diseño técnico en 8 secciones con placeholders `{reemplazar_...}`. |
+| **[`test_architecture.py`](file:///home/agustin/proyectos_software/spec/test_architecture.py)** | Suite de pruebas de conformidad arquitectónica mediante análisis estático AST (compatible con Pytest y ejecución CLI sin dependencias externas). |
 
 ---
 
-## 🧱 Estructura de Secciones de la Plantilla
+## 🧪 Validador de Arquitectura (`test_architecture.py`)
+
+El archivo [`test_architecture.py`](file:///home/agustin/proyectos_software/spec/test_architecture.py) analiza el Árbol de Sintaxis Abstracta (AST) de todos los archivos en `src/` para asegurar que se respeten al 100% las reglas de diseño:
+
+1. **Regla de Dominio (`src/domain`):** Núcleo puro. Prohibido importar `application`, `adapters`, `infrastructure`, frameworks web (`FastAPI`, `Starlette`) y drivers/ORMs (`SQLAlchemy`, `pymysql`, `redis`, etc.).
+2. **Regla de Aplicación (`src/application`):** Casos de uso. Prohibido importar `adapters`, `infrastructure`, frameworks web y ORMs/drivers de persistencia.
+3. **Regla de Adaptadores (`src/adapters`):** Agnosticismo web. Prohibido importar `infrastructure` ni `fastapi`/`starlette`.
+4. **Regla de Thin Controllers (`src/infrastructure/fastapi/routers`):** Prohibido importar `sqlalchemy` directamente en routers (deben delegar en la capa de aplicación).
+5. **Imports Absolutos:** Prohibidos imports relativos (`from . import ...` o `from .. import ...`). Todos deben ser `from src...`.
+6. **Archivos `__init__.py`:** Comprueba que todos los `__init__.py` tengan 0 bytes.
+
+### Ejecución:
+
+```bash
+# Como test automatizado en Pytest
+pytest tests/test_architecture.py
+
+# O como script CLI independiente
+python3 tests/test_architecture.py
+```
+
+---
+
+## 🧱 Estructura de Secciones de la Plantilla SRS
 
 | Sección | Descripción |
 | :--- | :--- |
@@ -73,30 +105,24 @@ El objetivo de esta plantilla ([`srs-spec-fastapi.md`](file:///home/agustin/proy
 | **5. Especificaciones Técnicas** | Modelado de dominio (entidades, Value Objects, puertos) y casos de uso con DTOs. |
 | **6. Diseño de APIs & Integraciones** | Endpoints REST, esquemas de entrada/salida y códigos de error HTTP. |
 | **7. Persistencia & Base de Datos** | Esquemas SQL/DDL, índices y modelos ORM. |
-| **8. Estrategia de Testing y Calidad** | Pirámide de pruebas (Unit, Integration, E2E) y herramientas de análisis estático (`ruff`, `pyright`, `pytest`). |
+| **8. Estrategia de Testing y Calidad** | Pirámide de pruebas (Unit, Integration, E2E, Architecture) y herramientas de análisis estático. |
 
 ---
 
-## 🚀 Cómo Usar la Plantilla
+## 🚀 Cómo Usar en un Proyecto Nuevo
 
-1. **Obtener la plantilla:**
-   Descárgala con los comandos superiores o cópiala a tu nuevo proyecto (ej. `docs/srs-mi-servicio.md`).
-
-2. **Completar los Placeholders:**
-   Busca todas las variables marcadas con `{...}` (ej. `{nombre_del_sistema_o_proyecto}`, `{reemplazar_entidad_1}`, etc.) y reemplázalas con las especificaciones reales de tu sistema.
-
-3. **Respetar las Reglas Arquitectónicas:**
-   - **Regla de Dependencia:** `domain` no depende de ninguna otra capa; `application` solo de `domain` y `pydantic`; `adapters` no conoce frameworks web ni ORM; `infrastructure` contiene FastAPI, SQLAlchemy y drivers externos.
-   - **Imports Absolutos:** Usa siempre `from src.domain...`, evitando imports relativos.
-   - **Archivos `__init__.py`:** Deben tener 0 bytes.
-   - **Commits:** Sigue la convención [Conventional Commits](https://www.conventionalcommits.org/).
-
-4. **Validación Continua:**
-   Utiliza los comandos de linters, formateadores y tests descritos en la sección 8 durante todo el ciclo de desarrollo:
+1. **Descargar los archivos:** Usa los comandos de descarga rápida de arriba para traer la spec a `docs/` y el validador a `tests/`.
+2. **Completar los Placeholders:** Reemplaza `{...}` en [`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md) con las reglas y diseño específicos de tu producto.
+3. **Desarrollar y Validar Continuamente:**
    ```bash
+   # Linter y Formato
    ruff check .
    ruff format --check .
+
+   # Chequeo de Tipos Estricto
    pyright
+
+   # Pruebas Unitarias, Integración y de Arquitectura
    pytest
    ```
 
