@@ -46,33 +46,18 @@ if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-Web
 
 ---
 
-### 3️⃣ Descargar la Plantilla de Variables de Entorno (`.env.example`)
-
-#### 🐧 Linux / macOS (Bash / Zsh)
-```bash
-curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/.env.example -o .env.example
-```
-
-#### 🪟 Windows (PowerShell)
-```powershell
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/.env.example" -OutFile ".env.example"
-```
-
----
-
-### ⚡ Descargar el Pack Completo de una Sola Vez
+### ⚡ Descargar ambos archivos de una sola vez
 
 #### 🐧 Linux / macOS (Bash / Zsh)
 ```bash
 mkdir -p docs tests && \
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md -o docs/srs-spec-fastapi.md && \
-curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/test_architecture.py -o tests/test_architecture.py && \
-curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/.env.example -o .env.example
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/test_architecture.py -o tests/test_architecture.py
 ```
 
 #### 🪟 Windows (PowerShell)
 ```powershell
-if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md" -OutFile "docs/srs-spec-fastapi.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/test_architecture.py" -OutFile "tests/test_architecture.py"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/.env.example" -OutFile ".env.example"
+if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md" -OutFile "docs/srs-spec-fastapi.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/test_architecture.py" -OutFile "tests/test_architecture.py"
 ```
 
 ---
@@ -83,7 +68,6 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 | :--- | :--- |
 | **[`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md)** | Plantilla rectora SSOT (Single Source of Truth) en 5 secciones modulares con placeholders `{reemplazar_...}`. |
 | **[`test_architecture.py`](file:///home/agustin/proyectos_software/spec/test_architecture.py)** | Suite de pruebas de conformidad arquitectónica y verificación de `__init__.py` de 0 bytes vía análisis estático AST. |
-| **[`.env.example`](file:///home/agustin/proyectos_software/spec/.env.example)** | Plantilla canónica de variables de entorno fuertemente tipadas consumidas por `pydantic-settings`. |
 | **[`.gitignore`](file:///home/agustin/proyectos_software/spec/.gitignore)** | Exclusiones estándar para entornos virtuales, `.env`, cachés de linters y editores. |
 
 ---
@@ -147,8 +131,8 @@ python3 tests/test_architecture.py
 
 ## 🚀 Cómo Usar en un Proyecto Nuevo
 
-1. **Descargar el pack:** Usa los comandos de descarga rápida de arriba para traer la spec a `docs/`, el validador a `tests/` y `.env.example` a la raíz.
-2. **Configurar el entorno:** Copia `.env.example` a `.env` y ajusta los valores locales.
+1. **Descargar los archivos:** Usa los comandos de descarga rápida de arriba para traer la spec a `docs/` y el validador a `tests/`.
+2. **Configurar el entorno:** Crea los archivos `.env`, `.env.example` y `.gitignore` en la raíz de tu proyecto según la estructura canónica.
 3. **Completar los Placeholders:** Reemplaza `{...}` en [`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md) con el diseño específico de tu producto.
 4. **Desarrollar y Validar Continuamente:**
    ```bash
