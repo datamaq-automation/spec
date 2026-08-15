@@ -52,7 +52,7 @@
 * **`agente-core-dominio`:** Supervisión de la lógica de negocio pura, entidades y reglas de dominio.
 * **`agente-integraciones-api`:** Gestión de endpoints, controladores, validación de schemas y contratos externos.
 * **`agente-persistencia-datos`:** Modelado de datos, migraciones, optimización de queries y repositorios.
-* **`agente-qa-calidad`:** Validación continua de tests AST (`test_architecture.py`), Pyright y cobertura de pruebas.
+* **`agente-qa-calidad`:** Validación continua del Guantelete de Restricciones (`test_architecture.py`), Pyright y tests.
 
 ### 2.3. Escalera de Valor / Modelo de Conversión
 * **Nivel de Entrada (*Lead Magnet* / Tier Gratuito):** `{ej_Demo_publica_tier_gratuito_o_herramienta_de_evaluacion}`.
@@ -77,14 +77,15 @@
 * **NFR-02 - Concurrencia & Throughput:** Capacidad para procesar `{rps_o_mensajes_por_segundo}` `{solicitudes_o_mensajes_por_segundo}` concurrentes sin degradación.
 * **NFR-03 - Disponibilidad & Resiliencia:** SLA objetivo del `{sla_porcentaje_ej_99_9}`% con reconexión automática y degradación elegante ante caídas de dependencias externas.
 * **NFR-04 - Seguridad y Cifrado:** Cifrado en tránsito (TLS 1.3) y en reposo para datos sensibles; gestión de secretos aislada vía variables de entorno (`.env` protegido por `.gitignore`).
-* **NFR-05 - Conformidad Arquitectónica:** 100% de cumplimiento en pruebas automáticas de AST (`tests/test_architecture.py`) en cada commit o PR.
+* **NFR-05 - Conformidad Arquitectónica:** 100% de cumplimiento en pruebas automáticas del Guantelete AST (`tests/test_architecture.py`) en cada commit o PR.
 
 ---
 
-## 4. Stack Tecnológico, Arquitectura & Convenciones (CONVENTIONS)
+## 4. Stack Tecnológico, Arquitectura Limpia & Convenciones (CONVENTIONS)
 
 ### 4.1. Stack Tecnológico Base
 * **Lenguaje:** Python 3.10+ (Tipado estricto con `typing`, `Annotated`, `dataclasses`).
+* **Arquitectura:** Clean Architecture Canónica (4 Círculos de Uncle Bob) + Screaming DDD.
 * **Framework Web:** FastAPI (asíncrono, OpenAPI autodocumentado).
 * **Validación & Schemas:** Pydantic v2 (`BaseModel`, `Field`, `ConfigDict`).
 * **Configuración Centralizada:** `pydantic-settings` (`BaseSettings`, `SettingsConfigDict`).
@@ -93,7 +94,7 @@
 * **Testing:** Pytest (`pytest-asyncio`, `httpx`).
 * **Linters & Tipado:** Ruff y Pyright (modo estricto).
 
-### 4.2. Estructura Canónica de Directorios
+### 4.2. Estructura Canónica de Directorios (Screaming DDD + Clean Architecture)
 
 ```
 .
@@ -102,32 +103,46 @@
 ├── .gitignore                                   # Exclusiones estándar (ignora .env, __pycache__, .venv)
 │
 ├── src/
-│   ├── domain/                                  # 1. Capa de Dominio Pura (Solo stdlib + dataclasses + Pydantic)
-│   │   └── {bounded_context_tematico}/          # Bounded Context temático
+│   ├── domain/                                  # CÍRCULO 1: Reglas de Negocio del Negocio (DDD Puro)
+│   │   └── {bounded_context_tematico}/          # Bounded Context temático (Grita el dominio)
 │   │       ├── __init__.py                      # (0 bytes obligatorio)
-│   │       ├── entities.py                      # Entidades de negocio con identidad única
-│   │       ├── value_objects.py                 # Value Objects inmutables con validación intrínseca
-│   │       ├── services.py                      # Lógica de dominio multi-entidad / reglas de cálculo
-│   │       ├── ports.py                         # Interfaces abstractas (Protocol / ABC) para persistencia y eventos
+│   │       ├── entities.py                      # Entidades de negocio con identidad ({Entidad_1}, {Entidad_2})
+│   │       ├── value_objects.py                 # Value Objects inmutables ({VO_1}, {VO_2})
+│   │       ├── services.py                      # Servicios de Dominio / Lógica multi-entidad ({ServicioDominio_1})
+│   │       ├── repositories.py                  # Interfaces abstractas de repositorios ({Entidad_1}Repository)
+│   │       ├── events.py                        # Eventos de Dominio ({EventoDominio_1})
 │   │       └── exceptions.py                    # Excepciones de negocio de dominio puro
 │   │
-│   ├── application/                             # 2. Capa de Aplicación (Casos de Uso, DTOs y Mappers)
-│   │   ├── use_cases/                           # Orquestación de lógica de negocio (1 caso de uso = 1 clase/archivo)
-│   │   ├── dtos/                                # RequestDTO y ResponseDTO tipados con Pydantic
-│   │   └── mappers/                             # Transformación bidireccional DTO <-> Entity
+│   ├── application/                             # CÍRCULO 2: Reglas de la Aplicación (Casos de Uso / Interactors)
+│   │   └── {bounded_context_tematico}/
+│   │       ├── __init__.py                      # (0 bytes obligatorio)
+│   │       ├── use_cases/                       # Orquestación de Casos de Uso (Verbos que gritan la acción)
+│   │       │   ├── {nombre_caso_uso_1_verbo}.py # class {NombreCasoUso1}UseCase(execute)
+│   │       │   └── {nombre_caso_uso_2_verbo}.py # class {NombreCasoUso2}UseCase(execute)
+│   │       ├── dtos/                            # Data Transfer Objects (Pydantic BaseModel)
+│   │       │   ├── {nombre_dto_request}.py      # class {NombreCasoUso1}Request
+│   │       │   └── {nombre_dto_response}.py     # class {NombreCasoUso1}Response
+│   │       └── mappers/                         # Traductores bidireccionales puros DTO <-> Entity
+│   │           └── {nombre_mapper}.py           # class {NombreEntidad}Mapper
 │   │
-│   ├── adapters/                                # 3. Capa de Adaptadores (Agnósticos de Frameworks Web)
-│   │   ├── controllers/                         # Controladores de aplicación que coordinan use cases
-│   │   ├── gateways/                            # Adaptadores hacia servicios externos / emisores
-│   │   └── presenters/                          # Mapeo a formatos de salida o códigos de error HTTP/gRPC
+│   ├── adapters/                                # CÍRCULO 3: Interface Adapters (Agnósticos de Frameworks Web)
+│   │   └── {bounded_context_tematico}/
+│   │       ├── __init__.py                      # (0 bytes obligatorio)
+│   │       ├── controllers/                     # Controladores que reciben DTOs y llaman al UseCase
+│   │       │   └── {nombre_controlador}.py      # class {NombreEntidad}Controller
+│   │       ├── presenters/                      # Formatean ResponseDTO o excepciones a HTTP/JSON/ViewModel
+│   │       │   └── {nombre_presentador}.py      # class {NombreEntidad}Presenter
+│   │       ├── gateways/                        # Adaptadores hacia servicios externos (APIs, notificaciones)
+│   │       │   └── {nombre_gateway}.py          # class {NombreServicioExterno}Gateway
+│   │       └── view_models/                     # (Opcional) Modelos para renderizado visual server-side
 │   │
-│   ├── infrastructure/                          # 4. Capa de Infraestructura (Detalles Externos y Frameworks)
-│   │   ├── fastapi/                             # Servidor FastAPI, routers y dependencias
-│   │   │   ├── routers/                         # Endpoints web (Thin Controllers)
+│   ├── infrastructure/                          # CÍRCULO 4: Frameworks & Drivers (Detalles Externos)
+│   │   ├── fastapi/                             # Mecanismo de entrega Web
+│   │   │   ├── routers/                         # Endpoints REST delgados (Thin Controllers)
 │   │   │   └── dependencies.py                  # Inyección de dependencias (Depends)
-│   │   ├── {orm_driver_dir}/                    # Modelos ORM y repositorios concretos (ej. sqlalchemy)
+│   │   ├── {orm_driver_dir}/                    # Persistencia concreta (ej. sqlalchemy)
 │   │   │   ├── models/                          # DeclarativeBase y esquemas de tablas
-│   │   │   └── repositories/                    # Implementaciones concretas de domain/ports.py
+│   │   │   └── repositories/                    # Implementaciones concretas de domain/.../repositories.py
 │   │   ├── {broker_driver_dir}/                 # Daemons/suscriptores para mensajería (si aplica)
 │   │   └── settings/                            # Configuración y Logging Centralizado
 │   │       ├── __init__.py                      # (0 bytes obligatorio)
@@ -138,7 +153,7 @@
 │
 └── tests/
     ├── __init__.py                              # (0 bytes obligatorio)
-    ├── test_architecture.py                     # Validador AST de capas y __init__.py vacíos
+    ├── test_architecture.py                     # Validador AST del Guantelete de Restricciones
     ├── unit/                                    # Pruebas unitarias de domain y use_cases
     ├── integration/                             # Pruebas de integración con DB/broker
     └── e2e/                                     # Pruebas de endpoints FastAPI (httpx.AsyncClient)
@@ -172,7 +187,7 @@
       LOG_LEVEL: str = Field(default="INFO")
 
       # API
-      PROJECT_NAME: str = Field(default="FastAPI Clean Architecture")
+      PROJECT_NAME: str = Field(default="{nombre_del_sistema_o_proyecto}")
       VERSION: str = Field(default="1.0.0")
       API_V1_PREFIX: str = Field(default="/api/v1")
       ALLOWED_HOSTS: List[str] = Field(default_factory=lambda: ["*"])
@@ -190,7 +205,7 @@
   ```
 
 #### C. `src/infrastructure/settings/logger.py` (Logging Estructurado)
-* Centraliza la inicialización de loggers con formato estructurado (JSON en producción, coloreado/consola en desarrollo):
+* Centraliza la inicialización de loggers con formato estructurado (JSON en producción, formateado en desarrollo):
   ```python
   import logging
   import sys
@@ -228,7 +243,7 @@
 4. **Gobernanza Antialucinación de Parámetros Críticos:**
    * Precios, constantes de ingeniería, reglas tarifarias y fórmulas clave deben provenir de `Settings` o base de datos, nunca *hardcoded* en código fuente.
 5. **Controladores Delgados (*Thin Controllers*):**
-   * Los routers en `infrastructure/fastapi/routers/` no contienen lógica de negocio ni importan ORMs directamente; delegan exclusivamente en `application/use_cases/`.
+   * Los routers en `infrastructure/fastapi/routers/` no contienen lógica de negocio ni importan ORMs directamente; delegan exclusivamente en `adapters/controllers/` o `application/use_cases/`.
 6. **Imports Absolutos:**
    * Prohibidos los imports relativos (`from . import ...` o `from .. import ...`). Se exige siempre sintaxis absoluta `from src....`.
 7. **Tipado Estricto Exhaustivo:**
