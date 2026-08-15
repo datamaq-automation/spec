@@ -1,6 +1,6 @@
 # 📐 Plantilla de SRS & Especificaciones Técnicas (FastAPI + Clean Architecture)
 
-Este repositorio provee las herramientas y plantillas estándar para diseñar, gobernar y validar proyectos backend en Python utilizando **FastAPI**, **Clean Architecture (Puertos y Adaptadores)** y principios de **Domain-Driven Design (DDD)** para el ecosistema DataMaq.
+Este repositorio provee las herramientas y plantillas estándar para diseñar, gobernar y validar proyectos backend en Python utilizando **FastAPI**, **Clean Architecture (Puertos y Adaptadores)** y principios de **Domain-Driven Design (DDD)**.
 
 ---
 
