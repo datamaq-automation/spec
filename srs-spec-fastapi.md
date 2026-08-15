@@ -76,7 +76,7 @@
 * **NFR-01 - Latencia y Rendimiento:** La latencia p95 en lecturas debe ser inferior a `{latencia_maxima_ms}` ms bajo condiciones normales de operación.
 * **NFR-02 - Concurrencia & Throughput:** Capacidad para procesar `{rps_o_mensajes_por_segundo}` `{solicitudes_o_mensajes_por_segundo}` concurrentes sin degradación.
 * **NFR-03 - Disponibilidad & Resiliencia:** SLA objetivo del `{sla_porcentaje_ej_99_9}`% con reconexión automática y degradación elegante ante caídas de dependencias externas.
-* **NFR-04 - Seguridad y Cifrado:** Cifrado en tránsito (TLS 1.3) y en reposo para datos sensibles; gestión de secretos aislada vía variables de entorno (`.env`).
+* **NFR-04 - Seguridad y Cifrado:** Cifrado en tránsito (TLS 1.3) y en reposo para datos sensibles; gestión de secretos aislada vía variables de entorno (`.env` protegido por `.gitignore`).
 * **NFR-05 - Conformidad Arquitectónica:** 100% de cumplimiento en pruebas automáticas de AST (`tests/test_architecture.py`) en cada commit o PR.
 
 ---
@@ -87,6 +87,7 @@
 * **Lenguaje:** Python 3.10+ (Tipado estricto con `typing`, `Annotated`, `dataclasses`).
 * **Framework Web:** FastAPI (asíncrono, OpenAPI autodocumentado).
 * **Validación & Schemas:** Pydantic v2 (`BaseModel`, `Field`, `ConfigDict`).
+* **Configuración Centralizada:** `pydantic-settings` (`BaseSettings`, `SettingsConfigDict`).
 * **ORM & Persistencia:** `{reemplazar_orm_ej_SQLAlchemy_2_0_SQLModel}` con soporte asíncrono.
 * **Broker & Mensajería (Opcional):** `{reemplazar_broker_ej_MQTT_Kafka_RabbitMQ_Redis}` con `{driver_broker_ej_aiokafka_paho_redis_asyncio}`.
 * **Testing:** Pytest (`pytest-asyncio`, `httpx`).
@@ -95,56 +96,143 @@
 ### 4.2. Estructura Canónica de Directorios
 
 ```
-src/
-├── domain/                                      # 1. Capa de Dominio Pura (Solo stdlib + dataclasses + Pydantic)
-│   └── {bounded_context_tematico}/              # Bounded Context temático
-│       ├── __init__.py                          # (0 bytes)
-│       ├── entities.py                          # Entidades de negocio con identidad única
-│       ├── value_objects.py                     # Value Objects inmutables con validación intrínseca
-│       ├── services.py                          # Lógica de dominio multi-entidad / reglas de cálculo
-│       ├── ports.py                             # Interfaces abstractas (Protocol / ABC) para persistencia y eventos
-│       └── exceptions.py                        # Excepciones de negocio de dominio puro
+.
+├── .env                                         # Variables de entorno secretas (NUNCA en git)
+├── .env.example                                 # Plantilla canónica de variables de entorno
+├── .gitignore                                   # Exclusiones estándar (ignora .env, __pycache__, .venv)
 │
-├── application/                                 # 2. Capa de Aplicación (Casos de Uso, DTOs y Mappers)
-│   ├── use_cases/                               # Orquestación de lógica de negocio (1 caso de uso = 1 clase/archivo)
-│   ├── dtos/                                    # RequestDTO y ResponseDTO tipados con Pydantic
-│   └── mappers/                                 # Transformación bidireccional DTO <-> Entity
+├── src/
+│   ├── domain/                                  # 1. Capa de Dominio Pura (Solo stdlib + dataclasses + Pydantic)
+│   │   └── {bounded_context_tematico}/          # Bounded Context temático
+│   │       ├── __init__.py                      # (0 bytes obligatorio)
+│   │       ├── entities.py                      # Entidades de negocio con identidad única
+│   │       ├── value_objects.py                 # Value Objects inmutables con validación intrínseca
+│   │       ├── services.py                      # Lógica de dominio multi-entidad / reglas de cálculo
+│   │       ├── ports.py                         # Interfaces abstractas (Protocol / ABC) para persistencia y eventos
+│   │       └── exceptions.py                    # Excepciones de negocio de dominio puro
+│   │
+│   ├── application/                             # 2. Capa de Aplicación (Casos de Uso, DTOs y Mappers)
+│   │   ├── use_cases/                           # Orquestación de lógica de negocio (1 caso de uso = 1 clase/archivo)
+│   │   ├── dtos/                                # RequestDTO y ResponseDTO tipados con Pydantic
+│   │   └── mappers/                             # Transformación bidireccional DTO <-> Entity
+│   │
+│   ├── adapters/                                # 3. Capa de Adaptadores (Agnósticos de Frameworks Web)
+│   │   ├── controllers/                         # Controladores de aplicación que coordinan use cases
+│   │   ├── gateways/                            # Adaptadores hacia servicios externos / emisores
+│   │   └── presenters/                          # Mapeo a formatos de salida o códigos de error HTTP/gRPC
+│   │
+│   ├── infrastructure/                          # 4. Capa de Infraestructura (Detalles Externos y Frameworks)
+│   │   ├── fastapi/                             # Servidor FastAPI, routers y dependencias
+│   │   │   ├── routers/                         # Endpoints web (Thin Controllers)
+│   │   │   └── dependencies.py                  # Inyección de dependencias (Depends)
+│   │   ├── {orm_driver_dir}/                    # Modelos ORM y repositorios concretos (ej. sqlalchemy)
+│   │   │   ├── models/                          # DeclarativeBase y esquemas de tablas
+│   │   │   └── repositories/                    # Implementaciones concretas de domain/ports.py
+│   │   ├── {broker_driver_dir}/                 # Daemons/suscriptores para mensajería (si aplica)
+│   │   └── settings/                            # Configuración y Logging Centralizado
+│   │       ├── __init__.py                      # (0 bytes obligatorio)
+│   │       ├── config.py                        # Settings(BaseSettings) con pydantic-settings
+│   │       └── logger.py                        # Logging estructurado JSON/texto configurado desde Settings
+│   │
+│   └── main.py                                  # Entrypoint ASGI (app = create_app())
 │
-├── adapters/                                    # 3. Capa de Adaptadores (Agnósticos de Frameworks Web)
-│   ├── controllers/                             # Controladores de aplicación que coordinan use cases
-│   ├── gateways/                                # Adaptadores hacia servicios externos / emisores
-│   └── presenters/                              # Mapeo a formatos de salida o códigos de error HTTP/gRPC
-│
-├── infrastructure/                              # 4. Capa de Infraestructura (Detalles Externos y Frameworks)
-│   ├── fastapi/                                 # Servidor FastAPI, routers y dependencias
-│   │   ├── routers/                             # Endpoints web (Thin Controllers)
-│   │   └── dependencies.py                      # Inyección de dependencias (Depends)
-│   ├── {orm_driver_dir}/                        # Modelos ORM y repositorios concretos (ej. sqlalchemy)
-│   │   ├── models/                              # DeclarativeBase y esquemas de tablas
-│   │   └── repositories/                        # Implementaciones concretas de domain/ports.py
-│   ├── {broker_driver_dir}/                     # Daemons/suscriptores para mensajería (si aplica)
-│   └── settings/                                # Configuración con pydantic-settings y logging estructurado
-│
-└── main.py                                      # Entrypoint ASGI (app = create_app())
+└── tests/
+    ├── __init__.py                              # (0 bytes obligatorio)
+    ├── test_architecture.py                     # Validador AST de capas y __init__.py vacíos
+    ├── unit/                                    # Pruebas unitarias de domain y use_cases
+    ├── integration/                             # Pruebas de integración con DB/broker
+    └── e2e/                                     # Pruebas de endpoints FastAPI (httpx.AsyncClient)
 ```
 
-### 4.3. Las Seis Reglas Innegociables de Arquitectura
+### 4.3. Especificación de Configuración & Logging Centralizado
+
+#### A. Gestión de Entorno (`.env`, `.env.example`, `.gitignore`)
+* **Regla de Seguridad:** El archivo `.env` contiene credenciales sensibles y **NUNCA** se commitea a Git. El archivo [`.gitignore`](file:///home/agustin/proyectos_software/spec/.gitignore) debe excluir explícitamente `.env` y `.env.*` (excepto `!.env.example`).
+* **Plantilla Canónica (`.env.example`):** Define todas las claves de configuración necesarias con valores ficticios o de desarrollo para guiar el setup local y pipelines de CI/CD.
+
+#### B. `src/infrastructure/settings/config.py` (Pydantic Settings)
+* Centraliza toda la configuración del sistema en una clase `Settings` derivada de `pydantic_settings.BaseSettings`:
+  ```python
+  from functools import lru_cache
+  from typing import List
+  from pydantic import Field
+  from pydantic_settings import BaseSettings, SettingsConfigDict
+
+  class Settings(BaseSettings):
+      model_config = SettingsConfigDict(
+          env_file=".env",
+          env_file_encoding="utf-8",
+          case_sensitive=True,
+          extra="ignore",
+      )
+
+      # Entorno
+      ENVIRONMENT: str = Field(default="development")
+      DEBUG: bool = Field(default=False)
+      LOG_LEVEL: str = Field(default="INFO")
+
+      # API
+      PROJECT_NAME: str = Field(default="FastAPI Clean Architecture")
+      VERSION: str = Field(default="1.0.0")
+      API_V1_PREFIX: str = Field(default="/api/v1")
+      ALLOWED_HOSTS: List[str] = Field(default_factory=lambda: ["*"])
+
+      # Seguridad
+      SECRET_KEY: str = Field(default="insecure-secret-key-change-in-production")
+      ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60)
+
+      # Base de Datos
+      DATABASE_URL: str = Field(default="sqlite+aiosqlite:///./app.db")
+
+  @lru_cache()
+  def get_settings() -> Settings:
+      return Settings()
+  ```
+
+#### C. `src/infrastructure/settings/logger.py` (Logging Estructurado)
+* Centraliza la inicialización de loggers con formato estructurado (JSON en producción, coloreado/consola en desarrollo):
+  ```python
+  import logging
+  import sys
+  from src.infrastructure.settings.config import get_settings
+
+  def setup_logging() -> logging.Logger:
+      settings = get_settings()
+      log_level = getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO)
+      
+      logging.basicConfig(
+          level=log_level,
+          format="%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(lineno)d - %(message)s",
+          handlers=[logging.StreamHandler(sys.stdout)],
+      )
+      logger = logging.getLogger(settings.PROJECT_NAME)
+      logger.setLevel(log_level)
+      return logger
+
+  logger = setup_logging()
+  ```
+
+---
+
+### 4.4. Las Siete Reglas Innegociables de Arquitectura
 
 1. **Regla de Dependencia de Capas (Validada por AST):**
    * `domain` nunca importa de capas externas (`application`, `adapters`, `infrastructure`).
    * `application` solo depende de `domain` y `pydantic`.
    * `adapters` depende de `application` y `domain` (nunca de `infrastructure` ni de FastAPI/ORM).
    * `infrastructure` aísla frameworks, bases de datos y librerías externas.
-2. **Desacople Absoluto de Datos (`data/`):**
+2. **Archivos `__init__.py` de 0 Bytes:**
+   * El 100% de los archivos `__init__.py` en `src/` y `tests/` deben estar completamente vacíos (0 bytes) para evitar dependencias circulares y efectos secundarios al importar módulos.
+3. **Desacople Absoluto de Datos (`data/`):**
    * Fuentes de verdad estáticas (JSON, Markdown, YAML) residen en `data/` desacopladas del código ejecutable.
-3. **Gobernanza Antialucinación de Parámetros Críticos:**
-   * Precios, constantes de ingeniería, reglas tarifarias y fórmulas clave deben provenir de configuración centralizada o base de datos, nunca *hardcoded* en código fuente.
-4. **Controladores Delgados (*Thin Controllers*):**
+4. **Gobernanza Antialucinación de Parámetros Críticos:**
+   * Precios, constantes de ingeniería, reglas tarifarias y fórmulas clave deben provenir de `Settings` o base de datos, nunca *hardcoded* en código fuente.
+5. **Controladores Delgados (*Thin Controllers*):**
    * Los routers en `infrastructure/fastapi/routers/` no contienen lógica de negocio ni importan ORMs directamente; delegan exclusivamente en `application/use_cases/`.
-5. **Imports Absolutos:**
+6. **Imports Absolutos:**
    * Prohibidos los imports relativos (`from . import ...` o `from .. import ...`). Se exige siempre sintaxis absoluta `from src....`.
-6. **Tipado Estricto Exhaustivo:**
-   * Prohibidas colecciones o variables sin tipo explícito (e.g. `list` sin parámetro genérico `list[str]`, `dict` sin tipar `dict[str, Any]`). Toda función debe especificar tipos de parámetros y retorno validados por Pyright.
+7. **Tipado Estricto Exhaustivo:**
+   * Prohibidas colecciones o variables sin tipo explícito (e.g. `list[str]`, `dict[str, Any]`). Toda función debe especificar tipos de parámetros y retorno validados por Pyright.
 
 ---
 
@@ -166,9 +254,9 @@ ruff format --check .
 # 2. Análisis Estático de Tipos Estricto
 pyright
 
-# 3. Validación de Reglas de Clean Architecture y DDD (AST)
+# 3. Validación de Conformidad Arquitectónica y __init__.py Vacíos (AST)
 python3 tests/test_architecture.py
 
-# 4. Ejecución de la Suite Completa de Pruebas (Unit, Integration, E2E)
+# 4. Ejecución de la Suite Completa de Pruebas (Pytest)
 pytest --maxfail=1 --disable-warnings -v
 ```
