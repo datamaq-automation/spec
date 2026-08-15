@@ -4,9 +4,51 @@ Este repositorio contiene la plantilla estándar de **Especificación de Requisi
 
 ---
 
+## 📥 Descargar la Plantilla Directamente (Sin clonar el repo)
+
+Si deseas incorporar únicamente el archivo de especificación en un proyecto existente, ejecuta el comando correspondiente según tu entorno de terminal:
+
+### 🐧 Linux / macOS (Bash / Zsh)
+
+**Con `curl`:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md -o srs-spec-fastapi.md
+```
+
+**Con `wget`:**
+```bash
+wget -O srs-spec-fastapi.md https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md
+```
+
+**Descargar directamente en carpeta `docs/`:**
+```bash
+mkdir -p docs && curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md -o docs/srs-spec-fastapi.md
+```
+
+---
+
+### 🪟 Windows (PowerShell)
+
+**Con `Invoke-WebRequest`:**
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md" -OutFile "srs-spec-fastapi.md"
+```
+
+**Sintaxis corta (`iwr`):**
+```powershell
+iwr "https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md" -OutFile "srs-spec-fastapi.md"
+```
+
+**Descargar directamente en carpeta `docs/`:**
+```powershell
+if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/srs-spec-fastapi.md" -OutFile "docs/srs-spec-fastapi.md"
+```
+
+---
+
 ## 🎯 Propósito
 
-El objetivo de esta plantilla ([`srs-spec.md`](file:///home/agustin/proyectos_software/spec/srs-spec.md)) es servir como guía unificada y contrato técnico previo a la implementación. Facilita:
+El objetivo de esta plantilla ([`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md)) es servir como guía unificada y contrato técnico previo a la implementación. Facilita:
 - Definir con claridad el alcance, actores y requerimientos funcionales (FR) y no funcionales (NFR).
 - Estandarizar la arquitectura y estructura de carpetas modular y desacoplada.
 - Especificar contratos de API, modelos de dominio, casos de uso y esquemas de base de datos antes de escribir código.
@@ -16,7 +58,7 @@ El objetivo de esta plantilla ([`srs-spec.md`](file:///home/agustin/proyectos_so
 
 ## 📂 Contenido del Repositorio
 
-- **[`srs-spec.md`](file:///home/agustin/proyectos_software/spec/srs-spec.md)**: Plantilla completa estructurada en 8 secciones clave con placeholders `{reemplazar_...}` listos para completar según las necesidades del proyecto.
+- **[`srs-spec-fastapi.md`](file:///home/agustin/proyectos_software/spec/srs-spec-fastapi.md)**: Plantilla completa estructurada en 8 secciones clave con placeholders `{reemplazar_...}` listos para completar según las necesidades del proyecto.
 
 ---
 
@@ -37,8 +79,8 @@ El objetivo de esta plantilla ([`srs-spec.md`](file:///home/agustin/proyectos_so
 
 ## 🚀 Cómo Usar la Plantilla
 
-1. **Copiar la plantilla:**
-   Copia [`srs-spec.md`](file:///home/agustin/proyectos_software/spec/srs-spec.md) en tu proyecto o renómbralo según tu producto (por ejemplo, `docs/srs-mi-servicio.md`).
+1. **Obtener la plantilla:**
+   Descárgala con los comandos superiores o cópiala a tu nuevo proyecto (ej. `docs/srs-mi-servicio.md`).
 
 2. **Completar los Placeholders:**
    Busca todas las variables marcadas con `{...}` (ej. `{nombre_del_sistema_o_proyecto}`, `{reemplazar_entidad_1}`, etc.) y reemplázalas con las especificaciones reales de tu sistema.
