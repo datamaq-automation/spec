@@ -1,6 +1,6 @@
 # SRS-SPECS: {nombre_del_sistema_o_proyecto} — Single Source of Truth (SSOT) & Especificación del Sistema
 
-> **Documento:** `srs-spec-fastapi.md`  
+> **Documento:** `srs-spec-backend-fastapi.md`  
 > **Versión:** `{version_documento_ej_1_0_0}`  
 > **Estado:** `{borrador_en_revision_aprobado}`  
 > **Fecha:** `{fecha_actual_o_release}`  

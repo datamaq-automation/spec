@@ -40,6 +40,26 @@ htmlcov/
 .env
 .env.*
 !.env.example
+.env.local
+
+# Node.js & Frontend (Vue + Vite)
+node_modules/
+dist/
+dist-ssr/
+coverage/
+.vite/
+*.local
+*.tsbuildinfo
+
+# Testing & E2E
+playwright-report/
+test-results/
+
+# Linters & Type Checking
+.mypy_cache/
+.ruff_cache/
+.pyright/
+.eslintcache
 
 # IDEs & Editors
 .vscode/
