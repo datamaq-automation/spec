@@ -1,7 +1,8 @@
 # .aider.conf.yml — Configuración de Aider para Backend (FastAPI + Clean Architecture)
 
-# Archivo de directivas y reglas operativas
-conventions: .aider.conventions.md
+# Archivo de directivas y reglas operativas (solo lectura)
+read:
+  - .aider.conventions.md
 
 # Comando de linter automático
 lint-cmd: ruff check --fix . && ruff format .

@@ -1,7 +1,8 @@
 # .aider.conf.yml — Configuración de Aider para Frontend (Vue 3 + Vite + FSD)
 
-# Archivo de directivas y reglas operativas
-conventions: .aider.conventions.md
+# Archivo de directivas y reglas operativas (solo lectura)
+read:
+  - .aider.conventions.md
 
 # Comando de linter automático
 lint-cmd: npm run lint
