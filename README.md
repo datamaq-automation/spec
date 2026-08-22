@@ -12,15 +12,17 @@ Incluye plantillas SSOT (*Single Source of Truth*) para **backend** y **frontend
 
 #### 🐧 Linux / macOS (Bash / Zsh)
 ```bash
-# Descargar dentro de docs/ y tests/
+# Descargar dentro de docs/, tests/ y raíz
 mkdir -p docs tests && \
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/srs-spec-backend-fastapi.md -o docs/srs-spec-backend-fastapi.md && \
-curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/test_architecture.py -o tests/test_architecture.py
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/test_architecture.py -o tests/test_architecture.py && \
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/.aider.conventions.md -o .aider.conventions.md && \
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/.aider.conf.yml -o .aider.conf.yml
 ```
 
 #### 🪟 Windows (PowerShell)
 ```powershell
-if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/srs-spec-backend-fastapi.md" -OutFile "docs/srs-spec-backend-fastapi.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/test_architecture.py" -OutFile "tests/test_architecture.py"
+if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/srs-spec-backend-fastapi.md" -OutFile "docs/srs-spec-backend-fastapi.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/test_architecture.py" -OutFile "tests/test_architecture.py"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/.aider.conventions.md" -OutFile ".aider.conventions.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/.aider.conf.yml" -OutFile ".aider.conf.yml"
 ```
 
 ---
@@ -29,15 +31,17 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 
 #### 🐧 Linux / macOS (Bash / Zsh)
 ```bash
-# Descargar dentro de docs/ y scripts/
+# Descargar dentro de docs/, scripts/ y raíz
 mkdir -p docs scripts && \
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/srs-spec-frontend-vue-vite.md -o docs/srs-spec-frontend-vue-vite.md && \
-curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/test_architecture.mjs -o scripts/test_architecture.mjs
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/test_architecture.mjs -o scripts/test_architecture.mjs && \
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/.aider.conventions.md -o .aider.conventions.md && \
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/.aider.conf.yml -o .aider.conf.yml
 ```
 
 #### 🪟 Windows (PowerShell)
 ```powershell
-if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path scripts)) { New-Item -ItemType Directory -Path scripts }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/srs-spec-frontend-vue-vite.md" -OutFile "docs/srs-spec-frontend-vue-vite.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/test_architecture.mjs" -OutFile "scripts/test_architecture.mjs"
+if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path scripts)) { New-Item -ItemType Directory -Path scripts }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/srs-spec-frontend-vue-vite.md" -OutFile "docs/srs-spec-frontend-vue-vite.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/test_architecture.mjs" -OutFile "scripts/test_architecture.mjs"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/.aider.conventions.md" -OutFile ".aider.conventions.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/.aider.conf.yml" -OutFile ".aider.conf.yml"
 ```
 
 ---
@@ -48,8 +52,12 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 | :--- | :--- | :--- |
 | **[`backend/srs-spec-backend-fastapi.md`](file:///home/agustin/proyectos_software/spec/backend/srs-spec-backend-fastapi.md)** | Spec | Plantilla SSOT de backend en 5 secciones modulares con placeholders `{reemplazar_...}`. |
 | **[`backend/test_architecture.py`](file:///home/agustin/proyectos_software/spec/backend/test_architecture.py)** | Validador | Guantelete AST de Clean Architecture y verificación de `__init__.py` de 0 bytes (Python, zero-deps). |
+| **[`backend/.aider.conventions.md`](file:///home/agustin/proyectos_software/spec/backend/.aider.conventions.md)** | Directivas Aider | Guía operativa de Aider para desarrollo backend (FastAPI, Clean Architecture, Gauntlet y Conventional Commits). |
+| **[`backend/.aider.conf.yml`](file:///home/agustin/proyectos_software/spec/backend/.aider.conf.yml)** | Config Aider | Automatización nativa de Aider (vinculación de linter y test-cmd con el Guantelete de Restricciones). |
 | **[`frontend/srs-spec-frontend-vue-vite.md`](file:///home/agustin/proyectos_software/spec/frontend/srs-spec-frontend-vue-vite.md)** | Spec | Plantilla SSOT de frontend SPA (Vue + Vite) en 5 secciones modulares. |
 | **[`frontend/test_architecture.mjs`](file:///home/agustin/proyectos_software/spec/frontend/test_architecture.mjs)** | Validador | Guantelete estático de Feature-Sliced Design y secretos (Node.js, zero-deps). |
+| **[`frontend/.aider.conventions.md`](file:///home/agustin/proyectos_software/spec/frontend/.aider.conventions.md)** | Directivas Aider | Guía operativa de Aider para desarrollo frontend (Vue 3, FSD, Gauntlet y Conventional Commits). |
+| **[`frontend/.aider.conf.yml`](file:///home/agustin/proyectos_software/spec/frontend/.aider.conf.yml)** | Config Aider | Automatización nativa de Aider (vinculación de linter y test-cmd con el Guantelete de Restricciones). |
 | **[`.gitignore`](file:///home/agustin/proyectos_software/spec/.gitignore)** | Config | Exclusiones estándar para entornos virtuales, `.env`, `node_modules`, cachés y editores. |
 
 ---
@@ -118,7 +126,7 @@ node scripts/test_architecture.mjs
 
 ## 🚀 Cómo Usar en un Proyecto Nuevo
 
-1. **Descargar los archivos:** Usa los comandos de descarga rápida de arriba para traer la spec a `docs/` y el validador a `tests/` (backend) o `scripts/` (frontend).
+1. **Descargar los archivos:** Usa los comandos de descarga rápida de arriba para traer la spec a `docs/`, el validador a `tests/` (backend) o `scripts/` (frontend) y las directivas `.aider.conventions.md` a la raíz de tu proyecto.
 2. **Configurar el entorno:** Crea los archivos `.env`/`.env.local`, `.env.example` y `.gitignore` en la raíz de tu proyecto según la estructura canónica de cada plantilla.
 3. **Completar los Placeholders:** Reemplaza `{...}` en la plantilla SSOT con el diseño específico de tu producto.
 4. **Desarrollar y Validar Continuamente:** Ejecuta la matriz de verificación de la plantilla correspondiente.

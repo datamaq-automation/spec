@@ -279,8 +279,8 @@ Todos los cambios deben superar el 100% de la siguiente batería de comandos ant
 ruff check .
 ruff format --check .
 
-# 2. Análisis Estático de Tipos Estricto
-pyright
+# 2. Análisis Estático de Tipos Estricto (respeta `pyrightconfig.json`; excluye `tests/` por diseño)
+pyright src/
 
 # 3. Validación de Arquitectura y Guantelete de Restricciones (AST)
 python3 tests/test_architecture.py
@@ -288,3 +288,32 @@ python3 tests/test_architecture.py
 # 4. Suite Completa de Pruebas en Pytest (Unit, Integration, E2E y Gauntlet)
 pytest --maxfail=1 --disable-warnings -v
 ```
+
+### 5.5. Configuración del Editor (Pylance / VS Code)
+
+Todo repositorio debe incluir dos archivos de configuración de tipos para garantizar que el LSP del editor (Pylance) y el análisis estático de CI (Pyright) emitan **exactamente los mismos diagnósticos**:
+
+1. **`pyrightconfig.json` (raíz)** — configura Pyright/Pylance:
+   ```json
+   {
+     "include": ["src"],
+     "exclude": ["tests", "venv", "**/__pycache__", "**/node_modules"],
+     "venvPath": ".",
+     "venv": "venv",
+     "typeCheckingMode": "standard",
+     "pythonVersion": "3.10"
+   }
+   ```
+2. **`.vscode/settings.json`** — alinea Pylance con la misma exclusión:
+   ```json
+   {
+     "python.analysis.exclude": ["tests", "venv", "**/__pycache__"]
+   }
+   ```
+
+**Motivación:** Pylance analiza archivos abiertos explícitamente aunque estén en el `exclude` de `pyrightconfig.json`. Sin `.vscode/settings.json`, los archivos de `tests/` emiten falsos positivos en el editor que no existen en CI — por ejemplo, los stubs de SQLAlchemy tipan `Model.__table__` como `FromClause`, por lo que `Model.__table__.create(engine)` se marca como error pese a ser válido en runtime.
+
+**Reglas innegociables:**
+- La exclusión de `tests/` del análisis de tipos es **deliberada** (los tests ejercitan ORMs en runtime). No debe "corregirse" con `cast(Any, ...)`, `# type: ignore` ni `# noqa`.
+- El `.vscode/settings.json` **debe versionarse**: en `.gitignore` usar el patrón `.vscode/*` (ignora el contenido) seguido de `!.vscode/settings.json` (re-incluye el archivo). Nunca ignorar el directorio con `.vscode/`, ya que Git no desciende a directorios ignorados.
+- `pyright` en CI debe ejecutarse como `pyright src/` (o confiar en el `exclude` de `pyrightconfig.json`); nunca sobre `tests/`.
