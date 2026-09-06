@@ -6,36 +6,55 @@ Incluye plantillas SSOT (*Single Source of Truth*) para **backend** y **frontend
 
 ---
 
-## 📥 Descarga Rápida (Sin clonar el repositorio)
+## 📥 Inicialización & Descarga Rápida (Sin clonar el repositorio)
 
-### 1️⃣ Backend — FastAPI + Clean Architecture
+### 🚀 Opción Recomendada: Scaffolding Completo en 1 Comando (Bash)
 
-#### 🐧 Linux / macOS (Bash / Zsh)
+Inicializa de inmediato toda la estructura canónica (`src/`, `tests/`, `config.py`, `logger.py`, `.env.example`, `.gitignore`, spec SRS y validador de arquitectura) ejecutando el Guantelete de Restricciones automáticamente:
+
 ```bash
-# Descargar dentro de docs/ y tests/
+# Para Backend (FastAPI + Clean Architecture)
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.sh | bash -s -- backend mi-backend-app
+
+# Para Frontend (Vue 3 + Vite + FSD)
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.sh | bash -s -- frontend mi-frontend-app
+
+# Para inicializar en el directorio actual:
+# curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.sh | bash -s -- backend .
+```
+
+---
+
+### 📦 Opción Alternativa: Descarga Mínima (Solo Spec + Validador)
+
+Si ya contás con un proyecto armado y solo necesitás auditarlo o adoptar la especificación técnica:
+
+#### 1️⃣ Backend — FastAPI + Clean Architecture
+
+##### 🐧 Linux / macOS (Bash / Zsh)
+```bash
 mkdir -p docs tests && \
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/srs-spec-backend-fastapi.md -o docs/srs-spec-backend-fastapi.md && \
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/template/tests/test_architecture.py -o tests/test_architecture.py
 ```
 
-#### 🪟 Windows (PowerShell)
+##### 🪟 Windows (PowerShell)
 ```powershell
 if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/srs-spec-backend-fastapi.md" -OutFile "docs/srs-spec-backend-fastapi.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/template/tests/test_architecture.py" -OutFile "tests/test_architecture.py"
 ```
 
 ---
 
-### 2️⃣ Frontend — Vue 3 + Vite (SPA)
+#### 2️⃣ Frontend — Vue 3 + Vite (SPA)
 
-#### 🐧 Linux / macOS (Bash / Zsh)
+##### 🐧 Linux / macOS (Bash / Zsh)
 ```bash
-# Descargar dentro de docs/ y scripts/
 mkdir -p docs scripts && \
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/srs-spec-frontend-vue-vite.md -o docs/srs-spec-frontend-vue-vite.md && \
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/template/scripts/test_architecture.mjs -o scripts/test_architecture.mjs
 ```
 
-#### 🪟 Windows (PowerShell)
+##### 🪟 Windows (PowerShell)
 ```powershell
 if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path scripts)) { New-Item -ItemType Directory -Path scripts }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/srs-spec-frontend-vue-vite.md" -OutFile "docs/srs-spec-frontend-vue-vite.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/template/scripts/test_architecture.mjs" -OutFile "scripts/test_architecture.mjs"
 ```
@@ -46,6 +65,7 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 
 | Archivo / Carpeta | Tipo | Descripción |
 | :--- | :--- | :--- |
+| **[`scripts/init.sh`](scripts/init.sh)** | Script CLI | Inicializador canónico de proyectos (descarga scaffolding, spec y corre el Guantelete). |
 | **[`backend/srs-spec-backend-fastapi.md`](backend/srs-spec-backend-fastapi.md)** | Spec | Plantilla SSOT de backend en 5 secciones modulares con placeholders `{reemplazar_...}`. |
 | **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py`, `main.py` y `tests/test_architecture.py`. |
 | **[`frontend/srs-spec-frontend-vue-vite.md`](frontend/srs-spec-frontend-vue-vite.md)** | Spec | Plantilla SSOT de frontend SPA (Vue + Vite) en 5 secciones modulares. |
