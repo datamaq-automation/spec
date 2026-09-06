@@ -44,12 +44,14 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 
 ## 📂 Contenido del Repositorio
 
-| Archivo | Tipo | Descripción |
+| Archivo / Carpeta | Tipo | Descripción |
 | :--- | :--- | :--- |
 | **[`backend/srs-spec-backend-fastapi.md`](backend/srs-spec-backend-fastapi.md)** | Spec | Plantilla SSOT de backend en 5 secciones modulares con placeholders `{reemplazar_...}`. |
 | **[`backend/test_architecture.py`](backend/test_architecture.py)** | Validador | Guantelete AST de Clean Architecture y verificación de `__init__.py` de 0 bytes (Python, zero-deps). |
+| **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py` y `main.py`. |
 | **[`frontend/srs-spec-frontend-vue-vite.md`](frontend/srs-spec-frontend-vue-vite.md)** | Spec | Plantilla SSOT de frontend SPA (Vue + Vite) en 5 secciones modulares. |
 | **[`frontend/test_architecture.mjs`](frontend/test_architecture.mjs)** | Validador | Guantelete estático de Feature-Sliced Design y secretos (Node.js, zero-deps). |
+| **[`frontend/template/`](frontend/template/)** | Scaffolding | Estructura canónica FSD completa con `package.json`, cliente HTTP Axios tipado y schemas base. |
 | **[`.gitignore`](.gitignore)** | Config | Exclusiones estándar para entornos virtuales, `.env`, `node_modules`, cachés y editores. |
 
 ---
