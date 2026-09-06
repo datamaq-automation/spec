@@ -248,9 +248,24 @@ Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro 
 4. **`check_absolute_imports`:** Prohíbe imports relativos entre capas (`../`), exigiendo alias `@/`.
 5. **`check_no_hardcoded_secrets`:** Detecta y bloquea API keys, tokens JWT o credenciales quemadas en código fuente.
 
-### 5.3. Estándares de Calidad & Trazabilidad
+### 5.3. Estándares de Calidad, Trazabilidad & Commits Atómicos
 * **Marco de Referencia:** Alineación con buenas prácticas de calidad de producto (ISO/IEC 25010), accesibilidad (WCAG 2.1) y seguridad de la información (ISO/IEC 27001).
-* **Trazabilidad de Cambios:** Commits bajo la convención estándar [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`).
+* **Lineamiento de Commits Atómicos (Principio de Responsabilidad Única en Git):**
+  * **Una Unidad Lógica por Commit:** Cada commit debe representar un cambio único, autocontenido, indivisible y con propósito claro. Queda estrictamente prohibido agrupar en un único commit features nuevas, refactorizaciones, corrección de bugs no relacionados y ajustes de formato cosmético.
+  * **Integridad del Repositorio:** Cada commit individual debe dejar el proyecto en un estado compilable, estable y pasando el 100% de la suite de tests, linters y type-checkers (cero commits con código roto o a medio implementar).
+  * **Aislamiento para Bisect y Revert:** La granularidad atómica asegura que cualquier regresión se aísle inmediatamente mediante `git bisect` y pueda revertirse con `git revert` limpiamente sin efectos secundarios ni destrucción de código colateral.
+  * **Regla del Conector "Y" (*And Rule*):** Si la descripción del commit necesita la conjunción "y" o "además" para describir lo realizado (e.g. `feat: add navbar user menu and fix button styling`), el commit NO es atómico y debe dividirse en micro-commits independientes.
+* **Convención Estricta de Mensajes ([Conventional Commits](https://www.conventionalcommits.org/)):**
+  * **Estructura Obligatoria:** `<tipo>(<alcance opcional>): <descripción concisa e imperativa>`
+  * **Tipos Permitidos:**
+    * `feat`: Nueva funcionalidad o componente para el usuario o sistema.
+    * `fix`: Corrección de un defecto, bug visual o lógico.
+    * `refactor`: Cambio estructural de componentes o lógica sin alteración del comportamiento externo.
+    * `test`: Creación o modificación de pruebas unitarias, de integración o de arquitectura.
+    * `docs`: Cambios exclusivos en documentación o especificaciones.
+    * `chore`: Mantenimiento de paquetes, dependencias o tooling sin impacto en runtime de producción.
+    * `perf`: Optimizaciones de renderizado, bundle size o tiempos de carga.
+    * `style`: Ajustes cosméticos o de formato sin impacto funcional.
 
 ### 5.4. Matriz de Verificación Automatizada Previa a Despliegues
 

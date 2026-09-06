@@ -96,7 +96,7 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 | **2. Modelo de Negocio Canvas (BMC 9 Bloques)** | Matriz visual de 9 bloques, Organigrama de Agentes IA y Escalera de Valor. |
 | **3. Requisitos del Sistema (SRS)** | Requisitos Funcionales (FR-01 al FR-xx) y No Funcionales (NFR-01 al NFR-xx: p95, throughput, seguridad). |
 | **4. Stack Tecnológico, Arquitectura & Convenciones** | Arquitectura por capas, Configuración centralizada, Logging, y **Las 7 Reglas Innegociables**. |
-| **5. Gobernanza Normativa, Calidad & Matriz de Pruebas** | Estándares de calidad ISO, Conventional Commits y Matriz de Verificación. |
+| **5. Gobernanza Normativa, Calidad & Matriz de Pruebas** | Estándares de calidad ISO, Commits Atómicos (Conventional Commits) y Matriz de Verificación. |
 
 ---
 
@@ -172,6 +172,25 @@ pytest tests/test_god_components.py -v        # Como suite de Pytest
 node scripts/test_god_components.mjs          # Reporte en consola
 node scripts/test_god_components.mjs --json   # Salida JSON estructurada para LLMs
 ```
+
+---
+
+## 📜 Disciplina de Control de Versiones: Commits Atómicos & Semánticos
+
+Tanto para desarrolladores como para agentes de IA que operan en los proyectos, rige el **Principio de Responsabilidad Única aplicado a Git (Commits Atómicos)**:
+
+1. **Una Unidad Lógica Indivisible por Commit:**
+   - Queda estrictamente prohibido agrupar en un único commit features nuevas, refactorizaciones, corrección de bugs no relacionados o cambios de formato cosmético.
+   - Si la descripción del commit requiere la conjunción **"y"** o **"además"** (e.g. `feat: add auth login and fix button styling`), el commit **no es atómico** y debe dividirse en micro-commits independientes.
+2. **Invariante de Compilación & Tests en Verde:**
+   - Cada commit individual debe dejar el repositorio en un estado estable, pasando el 100% de los linters, chequeos de tipos y suites de pruebas (cero commits rotos o a medio terminar).
+3. **Aislamiento Quirúrgico para Bisect y Revert:**
+   - Permite aislar regresiones de forma determinista con `git bisect` y revertir cualquier cambio conflictivo vía `git revert` sin afectar funcionalidades adyacentes.
+4. **Convención Estricta [Conventional Commits](https://www.conventionalcommits.org/):**
+   - Estructura: `<tipo>(<alcance opcional>): <descripción>`
+   - Tipos: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `style`.
+
+---
 
 ## 🚀 Cómo Usar en un Proyecto Nuevo
 
