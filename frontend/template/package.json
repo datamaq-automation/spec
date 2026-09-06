@@ -8,6 +8,8 @@
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "test:architecture": "node scripts/test_architecture.mjs",
+    "test:god": "node scripts/test_god_components.mjs",
+    "test:all": "node scripts/test_architecture.mjs && node scripts/test_god_components.mjs --strict",
     "type-check": "vue-tsc --noEmit"
   }
 }
