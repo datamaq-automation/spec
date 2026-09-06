@@ -15,12 +15,12 @@ Incluye plantillas SSOT (*Single Source of Truth*) para **backend** y **frontend
 # Descargar dentro de docs/ y tests/
 mkdir -p docs tests && \
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/srs-spec-backend-fastapi.md -o docs/srs-spec-backend-fastapi.md && \
-curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/test_architecture.py -o tests/test_architecture.py
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/template/tests/test_architecture.py -o tests/test_architecture.py
 ```
 
 #### 🪟 Windows (PowerShell)
 ```powershell
-if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/srs-spec-backend-fastapi.md" -OutFile "docs/srs-spec-backend-fastapi.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/test_architecture.py" -OutFile "tests/test_architecture.py"
+if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path tests)) { New-Item -ItemType Directory -Path tests }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/srs-spec-backend-fastapi.md" -OutFile "docs/srs-spec-backend-fastapi.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/backend/template/tests/test_architecture.py" -OutFile "tests/test_architecture.py"
 ```
 
 ---
@@ -32,12 +32,12 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 # Descargar dentro de docs/ y scripts/
 mkdir -p docs scripts && \
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/srs-spec-frontend-vue-vite.md -o docs/srs-spec-frontend-vue-vite.md && \
-curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/test_architecture.mjs -o scripts/test_architecture.mjs
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/template/scripts/test_architecture.mjs -o scripts/test_architecture.mjs
 ```
 
 #### 🪟 Windows (PowerShell)
 ```powershell
-if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path scripts)) { New-Item -ItemType Directory -Path scripts }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/srs-spec-frontend-vue-vite.md" -OutFile "docs/srs-spec-frontend-vue-vite.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/test_architecture.mjs" -OutFile "scripts/test_architecture.mjs"
+if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-Path scripts)) { New-Item -ItemType Directory -Path scripts }; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/srs-spec-frontend-vue-vite.md" -OutFile "docs/srs-spec-frontend-vue-vite.md"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/datamaq-automation/spec/main/frontend/template/scripts/test_architecture.mjs" -OutFile "scripts/test_architecture.mjs"
 ```
 
 ---
@@ -47,11 +47,9 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 | Archivo / Carpeta | Tipo | Descripción |
 | :--- | :--- | :--- |
 | **[`backend/srs-spec-backend-fastapi.md`](backend/srs-spec-backend-fastapi.md)** | Spec | Plantilla SSOT de backend en 5 secciones modulares con placeholders `{reemplazar_...}`. |
-| **[`backend/test_architecture.py`](backend/test_architecture.py)** | Validador | Guantelete AST de Clean Architecture y verificación de `__init__.py` de 0 bytes (Python, zero-deps). |
-| **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py` y `main.py`. |
+| **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py`, `main.py` y `tests/test_architecture.py`. |
 | **[`frontend/srs-spec-frontend-vue-vite.md`](frontend/srs-spec-frontend-vue-vite.md)** | Spec | Plantilla SSOT de frontend SPA (Vue + Vite) en 5 secciones modulares. |
-| **[`frontend/test_architecture.mjs`](frontend/test_architecture.mjs)** | Validador | Guantelete estático de Feature-Sliced Design y secretos (Node.js, zero-deps). |
-| **[`frontend/template/`](frontend/template/)** | Scaffolding | Estructura canónica FSD completa con `package.json`, cliente HTTP Axios tipado y schemas base. |
+| **[`frontend/template/`](frontend/template/)** | Scaffolding | Estructura canónica FSD completa con `package.json`, cliente HTTP Axios tipado, schemas base y `scripts/test_architecture.mjs`. |
 | **[`.gitignore`](.gitignore)** | Config | Exclusiones estándar para entornos virtuales, `.env`, `node_modules`, cachés y editores. |
 
 ---
@@ -79,7 +77,7 @@ Este repositorio implementa esa filosofía mediante un pipeline automatizado y d
 
 ## 🧪 Backend — Las 5 Baterías del Guantelete (`test_architecture.py`)
 
-El archivo [`backend/test_architecture.py`](file:///home/agustin/proyectos_software/spec/backend/test_architecture.py) analiza el Árbol de Sintaxis Abstracta (AST) de todos los archivos en `src/` y `tests/` con **cero dependencias externas**:
+El archivo [`backend/template/tests/test_architecture.py`](backend/template/tests/test_architecture.py) analiza el Árbol de Sintaxis Abstracta (AST) de todos los archivos en `src/` y `tests/` con **cero dependencias externas**:
 
 1. **`test_init_files_must_be_empty()`:** Comprueba que el 100% de los archivos `__init__.py` tengan exactamente 0 bytes (sin código, docstrings o imports) para prevenir dependencias circulares.
 2. **`test_clean_architecture_compliance()`:** Valida la regla de dependencia de capas (Domain puro, Application desacoplada, Adapters agnósticos, Routers delgados).
@@ -101,7 +99,7 @@ python3 tests/test_architecture.py
 
 ## 🧪 Frontend — Las 5 Baterías del Guantelete (`test_architecture.mjs`)
 
-El archivo [`frontend/test_architecture.mjs`](file:///home/agustin/proyectos_software/spec/frontend/test_architecture.mjs) analiza estáticamente el árbol de archivos de `src/` (TypeScript + Vue) con **cero dependencias externas**:
+El archivo [`frontend/template/scripts/test_architecture.mjs`](frontend/template/scripts/test_architecture.mjs) analiza estáticamente el árbol de archivos de `src/` (TypeScript + Vue) con **cero dependencias externas**:
 
 1. **`check_layer_dependencies()`:** Valida la regla de dependencia de capas FSD (`shared` puro, `core` acotado, `features` desacopladas, `app` orquestadora).
 2. **`check_no_explicit_any()`:** Prohíbe `any`, `@ts-ignore`, `@ts-nocheck` y `@ts-expect-error` en `src/`.
