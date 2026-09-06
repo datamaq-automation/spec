@@ -1,0 +1,101 @@
+name: CI — The Constraint Gauntlet
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-backend:
+    name: Backend — Architecture & Quality Gauntlet
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pydantic pydantic-settings fastapi httpx
+
+      - name: Execute Architecture Gauntlet (backend/template)
+        working-directory: backend/template
+        run: |
+          python tests/test_architecture.py
+
+      - name: Execute God Components Detector (backend/template)
+        working-directory: backend/template
+        run: |
+          python tests/test_god_components.py --strict
+
+      - name: Run Pytest Suite
+        working-directory: backend/template
+        run: |
+          pytest -v
+
+  validate-frontend:
+    name: Frontend — Architecture & Quality Gauntlet
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Execute Architecture Gauntlet (frontend/template)
+        working-directory: frontend/template
+        run: |
+          node scripts/test_architecture.mjs
+
+      - name: Execute God Components Detector (frontend/template)
+        working-directory: frontend/template
+        run: |
+          node scripts/test_god_components.mjs --strict
+
+  test-scaffolding-scripts:
+    name: Scaffolding Scripts Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python test tools
+        run: |
+          pip install pydantic pydantic-settings fastapi httpx pytest
+
+      - name: Test init.sh on Backend
+        run: |
+          mkdir -p /tmp/ci_test_backend
+          ./scripts/init.sh backend /tmp/ci_test_backend
+
+      - name: Test init.sh on Frontend
+        run: |
+          mkdir -p /tmp/ci_test_frontend
+          ./scripts/init.sh frontend /tmp/ci_test_frontend
