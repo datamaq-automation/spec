@@ -69,7 +69,20 @@ class FileMetric:
 
 def find_project_root(start_path: Path | None = None) -> Path:
     """Encuentra la raíz del proyecto buscando el directorio 'src' hacia arriba."""
-    current = (start_path or Path.cwd()).resolve()
+    if start_path is not None:
+        current = start_path.resolve()
+        for parent in [current, *current.parents]:
+            if (parent / "src").is_dir():
+                return parent
+        return current
+
+    # Priorizar ancestros del directorio donde reside este script
+    script_dir = Path(__file__).resolve().parent
+    for candidate in [script_dir, *script_dir.parents]:
+        if (candidate / "src").is_dir():
+            return candidate
+
+    current = Path.cwd().resolve()
     for parent in [current, *current.parents]:
         if (parent / "src").is_dir():
             return parent

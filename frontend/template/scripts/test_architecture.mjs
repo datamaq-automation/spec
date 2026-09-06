@@ -35,14 +35,31 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 /** Extensiones de archivos fuente analizados por el validador. */
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.vue', '.js', '.jsx']
 
-function findProjectRoot(startPath = process.cwd()) {
-  const start = resolve(startPath)
-  let current = start
-  // eslint-disable-next-line no-constant-condition
+function findProjectRoot(startPath = null) {
+  if (startPath) {
+    let current = resolve(startPath)
+    while (true) {
+      if (existsSync(join(current, 'src'))) return current
+      const parent = dirname(current)
+      if (parent === current) return resolve(startPath)
+      current = parent
+    }
+  }
+
+  // Priorizar ancestros del directorio del script
+  let scriptCurrent = __dirname
+  while (true) {
+    if (existsSync(join(scriptCurrent, 'src'))) return scriptCurrent
+    const parent = dirname(scriptCurrent)
+    if (parent === scriptCurrent) break
+    scriptCurrent = parent
+  }
+
+  let current = resolve(process.cwd())
   while (true) {
     if (existsSync(join(current, 'src'))) return current
     const parent = dirname(current)
-    if (parent === current) return start
+    if (parent === current) return resolve(process.cwd())
     current = parent
   }
 }

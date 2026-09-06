@@ -20,18 +20,38 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs"
 import { dirname, join, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
 const DEFAULT_MAX_FILE_LINES = 400
 const DEFAULT_MAX_CLASS_METHODS = 15
 const DEFAULT_MAX_FUNC_LINES = 60
 const SOURCE_EXTENSIONS = [".ts", ".tsx", ".vue", ".js", ".jsx"]
 
-function findProjectRoot(startPath = process.cwd()) {
-  const start = resolve(startPath)
-  let current = start
+function findProjectRoot(startPath = null) {
+  if (startPath) {
+    let current = resolve(startPath)
+    while (true) {
+      if (existsSync(join(current, "src"))) return current
+      const parent = dirname(current)
+      if (parent === current) return resolve(startPath)
+      current = parent
+    }
+  }
+
+  // Priorizar ancestros del directorio del script
+  let scriptCurrent = __dirname
+  while (true) {
+    if (existsSync(join(scriptCurrent, "src"))) return scriptCurrent
+    const parent = dirname(scriptCurrent)
+    if (parent === scriptCurrent) break
+    scriptCurrent = parent
+  }
+
+  let current = resolve(process.cwd())
   while (true) {
     if (existsSync(join(current, "src"))) return current
     const parent = dirname(current)
-    if (parent === current) return start
+    if (parent === current) return resolve(process.cwd())
     current = parent
   }
 }
