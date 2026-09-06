@@ -8,10 +8,11 @@ Incluye plantillas SSOT (*Single Source of Truth*) para **backend** y **frontend
 
 ## 📥 Inicialización & Descarga Rápida (Sin clonar el repositorio)
 
-### 🚀 Opción Recomendada: Scaffolding Completo en 1 Comando (Bash)
+### 🚀 Opción Recomendada: Scaffolding Completo en 1 Comando
 
 Inicializa de inmediato toda la estructura canónica (`src/`, `tests/`, `config.py`, `logger.py`, `.env.example`, `.gitignore`, spec SRS y validador de arquitectura) ejecutando el Guantelete de Restricciones automáticamente:
 
+#### 🐧 Linux / macOS (Bash / Zsh)
 ```bash
 # Para Backend (FastAPI + Clean Architecture)
 curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.sh | bash -s -- backend mi-backend-app
@@ -21,6 +22,18 @@ curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/script
 
 # Para inicializar en el directorio actual:
 # curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.sh | bash -s -- backend .
+```
+
+#### 🪟 Windows (PowerShell)
+```powershell
+# Para Backend (FastAPI + Clean Architecture)
+& ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.ps1).Content)) -Type backend -TargetDir mi-backend-app
+
+# Para Frontend (Vue 3 + Vite + FSD)
+& ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.ps1).Content)) -Type frontend -TargetDir mi-frontend-app
+
+# Para inicializar en el directorio actual:
+# & ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.ps1).Content)) -Type backend -TargetDir .
 ```
 
 ---
@@ -65,7 +78,8 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 
 | Archivo / Carpeta | Tipo | Descripción |
 | :--- | :--- | :--- |
-| **[`scripts/init.sh`](scripts/init.sh)** | Script CLI | Inicializador canónico de proyectos (descarga scaffolding, spec y corre el Guantelete). |
+| **[`scripts/init.sh`](scripts/init.sh)** | Script CLI (Bash) | Inicializador canónico para Linux/macOS (descarga scaffolding, spec y corre el Guantelete). |
+| **[`scripts/init.ps1`](scripts/init.ps1)** | Script CLI (PowerShell) | Inicializador canónico para Windows PowerShell (descarga scaffolding, spec y corre el Guantelete). |
 | **[`backend/srs-spec-backend-fastapi.md`](backend/srs-spec-backend-fastapi.md)** | Spec | Plantilla SSOT de backend en 5 secciones modulares con placeholders `{reemplazar_...}`. |
 | **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py`, `main.py` y `tests/test_architecture.py`. |
 | **[`frontend/srs-spec-frontend-vue-vite.md`](frontend/srs-spec-frontend-vue-vite.md)** | Spec | Plantilla SSOT de frontend SPA (Vue + Vite) en 5 secciones modulares. |
