@@ -1,0 +1,13 @@
+{
+  "name": "frontend-template",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "test:architecture": "node scripts/test_architecture.mjs",
+    "type-check": "vue-tsc --noEmit"
+  }
+}
