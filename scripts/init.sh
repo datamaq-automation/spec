@@ -68,12 +68,14 @@ echo "🛡️  3/3 Ejecutando Guantelete de Restricciones sobre el nuevo proyect
     if [[ "$TYPE" == "backend" ]]; then
         if command -v python3 >/dev/null 2>&1; then
             python3 tests/test_architecture.py
+            python3 tests/test_god_components.py
         else
             echo "⚠️  [AVISO] python3 no disponible para validar localmente en este momento."
         fi
     else
         if command -v node >/dev/null 2>&1; then
             node scripts/test_architecture.mjs
+            node scripts/test_god_components.mjs
         else
             echo "⚠️  [AVISO] node no disponible para validar localmente en este momento."
         fi

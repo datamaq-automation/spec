@@ -96,14 +96,17 @@ try {
         if ($Type -eq 'backend') {
             if (Get-Command python -ErrorAction SilentlyContinue) {
                 python tests/test_architecture.py
+                python tests/test_god_components.py
             } elseif (Get-Command py -ErrorAction SilentlyContinue) {
                 py tests/test_architecture.py
+                py tests/test_god_components.py
             } else {
                 Write-Warning 'Python no está en el PATH para validar localmente en este momento.'
             }
         } else {
             if (Get-Command node -ErrorAction SilentlyContinue) {
                 node scripts/test_architecture.mjs
+                node scripts/test_god_components.mjs
             } else {
                 Write-Warning 'Node.js no está en el PATH para validar localmente en este momento.'
             }

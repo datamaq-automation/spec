@@ -78,12 +78,12 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 
 | Archivo / Carpeta | Tipo | Descripción |
 | :--- | :--- | :--- |
-| **[`scripts/init.sh`](scripts/init.sh)** | Script CLI (Bash) | Inicializador canónico para Linux/macOS (descarga scaffolding, spec y corre el Guantelete). |
-| **[`scripts/init.ps1`](scripts/init.ps1)** | Script CLI (PowerShell) | Inicializador canónico para Windows PowerShell (descarga scaffolding, spec y corre el Guantelete). |
+| **[`scripts/init.sh`](scripts/init.sh)** | Script CLI (Bash) | Inicializador canónico para Linux/macOS (descarga scaffolding, spec y corre el Guantelete + God Components). |
+| **[`scripts/init.ps1`](scripts/init.ps1)** | Script CLI (PowerShell) | Inicializador canónico para Windows PowerShell (descarga scaffolding, spec y corre el Guantelete + God Components). |
 | **[`backend/srs-spec-backend-fastapi.md`](backend/srs-spec-backend-fastapi.md)** | Spec | Plantilla SSOT de backend en 5 secciones modulares con placeholders `{reemplazar_...}`. |
-| **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py`, `main.py` y `tests/test_architecture.py`. |
+| **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py`, `main.py`, `test_architecture.py` y `test_god_components.py`. |
 | **[`frontend/srs-spec-frontend-vue-vite.md`](frontend/srs-spec-frontend-vue-vite.md)** | Spec | Plantilla SSOT de frontend SPA (Vue + Vite) en 5 secciones modulares. |
-| **[`frontend/template/`](frontend/template/)** | Scaffolding | Estructura canónica FSD completa con `package.json`, cliente HTTP Axios tipado, schemas base y `scripts/test_architecture.mjs`. |
+| **[`frontend/template/`](frontend/template/)** | Scaffolding | Estructura canónica FSD completa con `package.json`, cliente Axios, `test_architecture.mjs` y `test_god_components.mjs`. |
 | **[`.gitignore`](.gitignore)** | Config | Exclusiones estándar para entornos virtuales, `.env`, `node_modules`, cachés y editores. |
 
 ---
@@ -149,6 +149,29 @@ node scripts/test_architecture.mjs
 ```
 
 ---
+
+## 🔍 Detección Determinística de Componentes Dios (`test_god_components`)
+
+Ambas plantillas incluyen detectores determinísticos para auditar el crecimiento desmedido de componentes de código fuente (God Files, God Classes y God Functions), arrojando rankings y alertas cuantitativas sobre archivos que requieran evaluación para refactorización.
+
+### Métricas y Umbrales Determinísticos:
+- **God Files:** Archivos que superen 400 líneas de código efectivas (sin comentarios/vacíos).
+- **God Classes:** Clases con más de 15 métodos o más de 250 líneas.
+- **God Functions:** Funciones o métodos con más de 60 líneas o complejidad ciclomática elevada (> 10).
+
+### Formato Dual (Humano & LLM-Ready):
+Ambos detectores cuentan con la bandera `--json` pensada para inyectar diagnósticos cuantitativos directamente en el contexto de agentes de IA o LLMs:
+
+```bash
+# Backend (Python / Pytest)
+python3 tests/test_god_components.py          # Reporte en consola
+python3 tests/test_god_components.py --json   # Salida JSON estructurada para LLMs
+pytest tests/test_god_components.py -v        # Como suite de Pytest
+
+# Frontend (Node.js)
+node scripts/test_god_components.mjs          # Reporte en consola
+node scripts/test_god_components.mjs --json   # Salida JSON estructurada para LLMs
+```
 
 ## 🚀 Cómo Usar en un Proyecto Nuevo
 
