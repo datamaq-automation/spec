@@ -131,7 +131,7 @@ python3 tests/test_architecture.py
 
 ---
 
-## 🧪 Frontend — Las 5 Baterías del Guantelete (`test_architecture.mjs`)
+## 🧪 Frontend — Las 6 Baterías del Guantelete (`test_architecture.mjs`)
 
 El archivo [`frontend/template/scripts/test_architecture.mjs`](frontend/template/scripts/test_architecture.mjs) analiza estáticamente el árbol de archivos de `src/` (TypeScript + Vue) con **cero dependencias externas**:
 
@@ -140,6 +140,7 @@ El archivo [`frontend/template/scripts/test_architecture.mjs`](frontend/template
 3. **`check_barrel_control()`:** Solo permite `index.ts` como barril de API pública dentro de `features/`; prohíbe `export *` en cascada fuera de ese contexto.
 4. **`check_absolute_imports()`:** Prohíbe imports relativos entre capas (`../`), exigiendo el alias `@/`.
 5. **`check_no_hardcoded_secrets()`:** Detecta y bloquea API keys, tokens JWT o credenciales quemadas en código fuente.
+6. **`check_no_vue_in_core()`:** Garantiza que `src/core/` sea 100% TypeScript puro (.ts) prohibiendo componentes `.vue`.
 
 ### Modo de Ejecución:
 

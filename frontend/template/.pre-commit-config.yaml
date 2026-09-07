@@ -1,0 +1,29 @@
+# Configuración de Pre-commit Hooks (Uncle Bob Constraint Gauntlet) — Frontend SPA
+# Para instalar: pre-commit install
+# Para ejecutar en todos los archivos: pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: architecture-gauntlet-frontend
+        name: El Guantelete de Restricciones SPA (FSD Architecture)
+        entry: node scripts/test_architecture.mjs
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: god-components-detector-frontend
+        name: Detector de Componentes Dios Frontend (God SFC & Functions)
+        entry: node scripts/test_god_components.mjs --strict
+        language: system
+        pass_filenames: false
+        always_run: true

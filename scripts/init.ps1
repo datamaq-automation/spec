@@ -129,7 +129,8 @@ try {
         Write-Host "  1. cd $TargetDir"
         Write-Host '  2. Copy-Item .env.example .env.local'
         Write-Host '  3. npm install'
-        Write-Host '  4. npm run test:architecture'
+        Write-Host '  4. npm run test:all'
+        Write-Host '  5. npm run dev'
     }
     Write-Host '======================================================================' -ForegroundColor Cyan
 } finally {

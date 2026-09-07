@@ -96,6 +96,7 @@ else
     echo "  1. cd $TARGET_DIR"
     echo "  2. cp .env.example .env.local"
     echo "  3. npm install"
-    echo "  4. npm run test:architecture"
+    echo "  4. npm run test:all"
+    echo "  5. npm run dev"
 fi
 echo "======================================================================"
