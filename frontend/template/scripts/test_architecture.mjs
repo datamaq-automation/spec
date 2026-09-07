@@ -303,6 +303,21 @@ function checkNoHardcodedSecrets(files, root) {
 }
 
 // ==============================================================================
+// 6. Verificación de Exclusión de Componentes (.vue) en Capa Core (100% .ts)
+// ==============================================================================
+
+function checkNoVueInCore(files, root) {
+  const errors = []
+  for (const file of files) {
+    const rel = relToSrc(file, root)
+    if (rel.startsWith('core/') && rel.endsWith('.vue')) {
+      errors.push(`[SFC PROHIBIDO EN CORE] ${rel} es un archivo .vue. La capa core debe ser 100% TypeScript puro (.ts) sin componentes de presentación.`)
+    }
+  }
+  return errors
+}
+
+// ==============================================================================
 // CLI Runner Independiente
 // ==============================================================================
 
@@ -328,6 +343,7 @@ function main() {
     ['3. Control de Barriles (export *)', checkBarrelControl(files, root)],
     ['4. Imports Absolutos (alias @/)', checkAbsoluteImports(files, root)],
     ['5. Seguridad & Secretos (Cero hardcoded)', checkNoHardcodedSecrets(files, root)],
+    ['6. Capa Core 100% .ts (Cero .vue en core/)', checkNoVueInCore(files, root)],
   ]
 
   const totalErrors = []

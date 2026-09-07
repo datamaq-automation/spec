@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { formatDate } from "../../src/shared/utils/index"
-import { healthSchema } from "../../src/core/schemas/common"
+import { formatDate } from "@/shared/utils/index"
+import { healthSchema } from "@/core/schemas/common"
 
 describe("Unit Tests — Shared Utils & Core Schemas", () => {
   it("formatDate should return ISO string", () => {
