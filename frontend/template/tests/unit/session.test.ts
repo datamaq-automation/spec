@@ -1,3 +1,4 @@
+// tests/unit/session.test.ts
 import { beforeEach, describe, expect, it } from "vitest"
 import { createPinia, setActivePinia } from "pinia"
 import { useSessionStore } from "@/app/stores/session"

@@ -1,3 +1,4 @@
+<!-- src/shared/ui/BaseButton.vue -->
 <script setup lang="ts">
 interface Props {
   variant?: "primary" | "secondary" | "danger"

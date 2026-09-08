@@ -1,5 +1,5 @@
 /**
- * test_architecture.mjs — El Guantelete de Restricciones Extremas (Feature-Sliced Design & SPA).
+ * scripts/test_architecture.mjs — El Guantelete de Restricciones Extremas (Feature-Sliced Design & SPA).
  *
  * Inspirado en la filosofía de Robert C. Martin ("Uncle Bob") sobre el desarrollo asistido por agentes IA:
  * "Rodear a los agentes de restricciones extremas para tener máxima confianza en el código producido."
@@ -21,6 +21,10 @@
  *      - Prohíbe imports relativos entre capas (`../`); exige el alias `@/`.
  *   5. check_no_hardcoded_secrets:
  *      - Detecta API keys, tokens JWT o credenciales quemadas en código fuente.
+ *   6. check_no_vue_in_core:
+ *      - Capa core 100% TypeScript puro (cero componentes .vue).
+ *   7. check_relative_path_headers:
+ *      - Exige que todo archivo comience con un comentario de su ruta relativa exacta.
  *
  * Uso:
  *   - Como Script:  node test_architecture.mjs
@@ -318,6 +322,42 @@ function checkNoVueInCore(files, root) {
 }
 
 // ==============================================================================
+// 7. Verificación de Cabecera con Path Relativo (Trazabilidad)
+// ==============================================================================
+
+function checkRelativePathHeaders(files, root) {
+  const errors = []
+  for (const file of files) {
+    const relPath = relative(root, file).replace(/\\/g, '/')
+    try {
+      const content = readFileSync(file, 'utf8')
+      const firstChunk = content.slice(0, 300).trim()
+      let hasHeader = false
+      if (file.endsWith('.vue')) {
+        hasHeader = firstChunk.startsWith(`<!-- ${relPath}`) || firstChunk.startsWith(`<!--${relPath}`)
+      } else {
+        hasHeader = (
+          firstChunk.startsWith(`// ${relPath}`) ||
+          firstChunk.startsWith(`//${relPath}`) ||
+          firstChunk.startsWith(`/* ${relPath}`) ||
+          firstChunk.startsWith(`/** ${relPath}`) ||
+          firstChunk.startsWith(`/*\n * ${relPath}`) ||
+          firstChunk.startsWith(`/**\n * ${relPath}`)
+        )
+      }
+      if (!hasHeader) {
+        errors.push(
+          `[CABECERA FALTANTE] ${relPath} debe comenzar con un comentario indicando su ruta relativa exacta (ej: // ${relPath} o <!-- ${relPath} -->).`
+        )
+      }
+    } catch (err) {
+      errors.push(`[ERROR LECTURA] ${relPath}: ${err.message}`)
+    }
+  }
+  return errors
+}
+
+// ==============================================================================
 // CLI Runner Independiente
 // ==============================================================================
 
@@ -337,6 +377,18 @@ function main() {
 
   const files = walk(srcDir, SOURCE_EXTENSIONS)
 
+  const allProjectDirs = [srcDir]
+  const scriptsDir = join(root, 'scripts')
+  if (existsSync(scriptsDir)) allProjectDirs.push(scriptsDir)
+  const testsDir = join(root, 'tests')
+  if (existsSync(testsDir)) allProjectDirs.push(testsDir)
+
+  const headerExtensions = ['.ts', '.tsx', '.vue', '.js', '.jsx', '.mjs']
+  const allHeaderFiles = []
+  for (const d of allProjectDirs) {
+    allHeaderFiles.push(...walk(d, headerExtensions))
+  }
+
   const suites = [
     ['1. Dependencias de Capas (Feature-Sliced Design)', checkLayerDependencies(files, root)],
     ['2. Tipado Estricto (Cero `any` / supresiones)', checkNoExplicitAny(files, root)],
@@ -344,6 +396,7 @@ function main() {
     ['4. Imports Absolutos (alias @/)', checkAbsoluteImports(files, root)],
     ['5. Seguridad & Secretos (Cero hardcoded)', checkNoHardcodedSecrets(files, root)],
     ['6. Capa Core 100% .ts (Cero .vue en core/)', checkNoVueInCore(files, root)],
+    ['7. Cabecera de Path Relativo (Trazabilidad)', checkRelativePathHeaders(allHeaderFiles, root)],
   ]
 
   const totalErrors = []
@@ -380,6 +433,8 @@ export {
   checkLayerDependencies,
   checkNoExplicitAny,
   checkNoHardcodedSecrets,
+  checkNoVueInCore,
+  checkRelativePathHeaders,
   findProjectRoot,
   walk,
 }

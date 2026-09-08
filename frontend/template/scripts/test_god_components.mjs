@@ -1,5 +1,5 @@
 /**
- * test_god_components.mjs — Detector Determinístico de Componentes Dios para Frontend (FSD & Vue/TS).
+ * scripts/test_god_components.mjs — Detector Determinístico de Componentes Dios para Frontend (FSD & Vue/TS).
  *
  * Analiza el código fuente en src/ utilizando únicamente la librería estándar de Node.js (zero-deps).
  *

@@ -1,3 +1,4 @@
+// src/core/schemas/common.ts
 import { z } from 'zod'
 
 export const healthSchema = z.object({

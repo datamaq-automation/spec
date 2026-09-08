@@ -1,3 +1,4 @@
+// src/app/stores/session.ts
 import { defineStore } from "pinia"
 import { ref } from "vue"
 
