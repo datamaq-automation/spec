@@ -27,3 +27,10 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+
+      - id: clean-design-detector-frontend
+        name: Detector de Código Muerto y Sobreingeniería Frontend (Clean Design & YAGNI)
+        entry: node scripts/test_clean_design.mjs --strict
+        language: system
+        pass_filenames: false
+        always_run: true

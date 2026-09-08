@@ -92,12 +92,14 @@ if ($Upgrade) {
         if (-not (Test-Path $TestsDir)) { New-Item -ItemType Directory -Path $TestsDir -Force | Out-Null }
         Invoke-WebRequest -Uri "$RawBaseUrl/backend/template/tests/test_architecture.py" -OutFile (Join-Path $TestsDir 'test_architecture.py') -UseBasicParsing
         Invoke-WebRequest -Uri "$RawBaseUrl/backend/template/tests/test_god_components.py" -OutFile (Join-Path $TestsDir 'test_god_components.py') -UseBasicParsing
+        Invoke-WebRequest -Uri "$RawBaseUrl/backend/template/tests/test_clean_design.py" -OutFile (Join-Path $TestsDir 'test_clean_design.py') -UseBasicParsing
         Invoke-WebRequest -Uri "$RawBaseUrl/backend/template/.pre-commit-config.yaml" -OutFile (Join-Path $TargetDir '.pre-commit-config.yaml') -UseBasicParsing
     } else {
         $ScriptsDir = Join-Path $TargetDir 'scripts'
         if (-not (Test-Path $ScriptsDir)) { New-Item -ItemType Directory -Path $ScriptsDir -Force | Out-Null }
         Invoke-WebRequest -Uri "$RawBaseUrl/frontend/template/scripts/test_architecture.mjs" -OutFile (Join-Path $ScriptsDir 'test_architecture.mjs') -UseBasicParsing
         Invoke-WebRequest -Uri "$RawBaseUrl/frontend/template/scripts/test_god_components.mjs" -OutFile (Join-Path $ScriptsDir 'test_god_components.mjs') -UseBasicParsing
+        Invoke-WebRequest -Uri "$RawBaseUrl/frontend/template/scripts/test_clean_design.mjs" -OutFile (Join-Path $ScriptsDir 'test_clean_design.mjs') -UseBasicParsing
         Invoke-WebRequest -Uri "$RawBaseUrl/frontend/template/.pre-commit-config.yaml" -OutFile (Join-Path $TargetDir '.pre-commit-config.yaml') -UseBasicParsing
     }
 } else {
@@ -155,9 +157,11 @@ try {
         if (Get-Command python -ErrorAction SilentlyContinue) {
             python tests/test_architecture.py
             python tests/test_god_components.py
+            python tests/test_clean_design.py
         } elseif (Get-Command py -ErrorAction SilentlyContinue) {
             py tests/test_architecture.py
             py tests/test_god_components.py
+            py tests/test_clean_design.py
         } else {
             Write-Warning 'Python no está en el PATH para validar localmente en este momento.'
         }
@@ -165,6 +169,7 @@ try {
         if (Get-Command node -ErrorAction SilentlyContinue) {
             node scripts/test_architecture.mjs
             node scripts/test_god_components.mjs
+            node scripts/test_clean_design.mjs
         } else {
             Write-Warning 'Node.js no está en el PATH para validar localmente en este momento.'
         }

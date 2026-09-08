@@ -108,11 +108,13 @@ if [[ "$MODE" == "upgrade" ]]; then
         mkdir -p "${TARGET_DIR}/tests"
         curl -fsSL "${RAW_BASE_URL}/backend/template/tests/test_architecture.py" -o "${TARGET_DIR}/tests/test_architecture.py"
         curl -fsSL "${RAW_BASE_URL}/backend/template/tests/test_god_components.py" -o "${TARGET_DIR}/tests/test_god_components.py"
+        curl -fsSL "${RAW_BASE_URL}/backend/template/tests/test_clean_design.py" -o "${TARGET_DIR}/tests/test_clean_design.py"
         curl -fsSL "${RAW_BASE_URL}/backend/template/.pre-commit-config.yaml" -o "${TARGET_DIR}/.pre-commit-config.yaml"
     else
         mkdir -p "${TARGET_DIR}/scripts"
         curl -fsSL "${RAW_BASE_URL}/frontend/template/scripts/test_architecture.mjs" -o "${TARGET_DIR}/scripts/test_architecture.mjs"
         curl -fsSL "${RAW_BASE_URL}/frontend/template/scripts/test_god_components.mjs" -o "${TARGET_DIR}/scripts/test_god_components.mjs"
+        curl -fsSL "${RAW_BASE_URL}/frontend/template/scripts/test_clean_design.mjs" -o "${TARGET_DIR}/scripts/test_clean_design.mjs"
         curl -fsSL "${RAW_BASE_URL}/frontend/template/.pre-commit-config.yaml" -o "${TARGET_DIR}/.pre-commit-config.yaml"
     fi
 else
@@ -145,6 +147,7 @@ echo "🛡️  Ejecutando Guantelete de Restricciones sobre el proyecto..."
         if command -v python3 >/dev/null 2>&1; then
             python3 tests/test_architecture.py
             python3 tests/test_god_components.py
+            python3 tests/test_clean_design.py
         else
             echo "⚠️  [AVISO] python3 no disponible para validar localmente en este momento."
         fi
@@ -152,6 +155,7 @@ echo "🛡️  Ejecutando Guantelete de Restricciones sobre el proyecto..."
         if command -v node >/dev/null 2>&1; then
             node scripts/test_architecture.mjs
             node scripts/test_god_components.mjs
+            node scripts/test_clean_design.mjs
         else
             echo "⚠️  [AVISO] node no disponible para validar localmente en este momento."
         fi
