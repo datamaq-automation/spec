@@ -1,7 +1,10 @@
+"""src/infrastructure/settings/logger.py — Configuración de logging estructurado."""
+
 from __future__ import annotations
 
 import logging
 import sys
+
 from src.infrastructure.settings.config import get_settings
 
 

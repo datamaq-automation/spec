@@ -1,4 +1,4 @@
-"""test_god_components.py — Detector Determinístico de Componentes Dios (God Objects).
+"""tests/test_god_components.py — Detector Determinístico de Componentes Dios (God Objects).
 
 Analiza el código fuente en src/ utilizando el Árbol de Sintaxis Abstracta (AST) de Python
 y la librería estándar (cero dependencias externas obligatorias).
@@ -134,11 +134,7 @@ def analyze_file(
     total_lines, code_lines = count_lines(content)
 
     is_god_file = code_lines > max_file_lines
-    file_reason = (
-        f"Supera límite de {max_file_lines} líneas de código ({code_lines})"
-        if is_god_file
-        else ""
-    )
+    file_reason = f"Supera límite de {max_file_lines} líneas de código ({code_lines})" if is_god_file else ""
     file_metric = FileMetric(
         file_path=rel_path,
         total_lines=total_lines,
@@ -159,11 +155,7 @@ def analyze_file(
         if isinstance(node, ast.ClassDef):
             end_lineno = getattr(node, "end_lineno", node.lineno)
             cls_lines = end_lineno - node.lineno + 1
-            methods = [
-                n
-                for n in node.body
-                if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
-            ]
+            methods = [n for n in node.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
             method_count = len(methods)
 
             reasons = []
@@ -263,9 +255,7 @@ def scan_directory(
             "god_files_count": len(god_files),
             "god_classes_count": len(god_classes),
             "god_functions_count": len(god_functions),
-            "requires_refactoring_review": bool(
-                god_files or god_classes or god_functions
-            ),
+            "requires_refactoring_review": bool(god_files or god_classes or god_functions),
         },
         "thresholds": {
             "max_file_lines": max_file_lines,
@@ -303,9 +293,7 @@ def test_no_critical_god_classes():
     """Pytest: Verifica que ninguna clase supere el umbral crítico de God Class."""
     results = scan_directory()
     god_classes = results["god_components"]["classes"]
-    assert not god_classes, (
-        f"Se detectaron {len(god_classes)} clases Dios: {god_classes}"
-    )
+    assert not god_classes, f"Se detectaron {len(god_classes)} clases Dios: {god_classes}"
 
 
 def test_no_critical_god_functions():
@@ -336,9 +324,7 @@ def main() -> None:
         help="Cantidad de elementos en el ranking superior",
     )
     parser.add_argument("--max-file-lines", type=int, default=DEFAULT_MAX_FILE_LINES)
-    parser.add_argument(
-        "--max-class-methods", type=int, default=DEFAULT_MAX_CLASS_METHODS
-    )
+    parser.add_argument("--max-class-methods", type=int, default=DEFAULT_MAX_CLASS_METHODS)
     parser.add_argument("--max-class-lines", type=int, default=DEFAULT_MAX_CLASS_LINES)
     parser.add_argument("--max-func-lines", type=int, default=DEFAULT_MAX_FUNC_LINES)
     parser.add_argument("--max-complexity", type=int, default=DEFAULT_MAX_CYCLOMATIC)
@@ -381,29 +367,21 @@ def main() -> None:
     if god_files:
         print(f"\n❌ [ALERTA] Archivos Dios detectados ({len(god_files)}):")
         for f in god_files:
-            print(
-                f"   • {f['file_path']} ({f['code_lines']} líneas de código) -> {f['reason']}"
-            )
+            print(f"   • {f['file_path']} ({f['code_lines']} líneas de código) -> {f['reason']}")
     else:
         print("\n✅ [OK] Ningún archivo supera el umbral de God File.")
 
     if god_classes:
         print(f"\n❌ [ALERTA] Clases Dios detectadas ({len(god_classes)}):")
         for c in god_classes:
-            print(
-                f"   • {c['file_path']}:{c['lineno']} class {c['name']} -> {c['reason']}"
-            )
+            print(f"   • {c['file_path']}:{c['lineno']} class {c['name']} -> {c['reason']}")
     else:
         print("✅ [OK] Ninguna clase supera el umbral de God Class.")
 
     if god_functions:
-        print(
-            f"\n❌ [ALERTA] Funciones/Métodos Dios detectados ({len(god_functions)}):"
-        )
+        print(f"\n❌ [ALERTA] Funciones/Métodos Dios detectados ({len(god_functions)}):")
         for fn in god_functions:
-            print(
-                f"   • {fn['file_path']}:{fn['lineno']} def {fn['name']} -> {fn['reason']}"
-            )
+            print(f"   • {fn['file_path']}:{fn['lineno']} def {fn['name']} -> {fn['reason']}")
     else:
         print("✅ [OK] Ninguna función supera el umbral de God Function.")
 
@@ -416,9 +394,7 @@ def main() -> None:
     print("\n📂 Top Archivos por líneas de código:")
     for idx, f in enumerate(data["top_rankings"]["top_files"][:top_limit], start=1):
         status = "⚠️ ALERTA" if f["is_god"] else "✓ OK"
-        print(
-            f"   {idx}. [{status}] {f['file_path']} ({f['code_lines']} LOC / {f['total_lines']} total)"
-        )
+        print(f"   {idx}. [{status}] {f['file_path']} ({f['code_lines']} LOC / {f['total_lines']} total)")
 
     print("\n🏛️ Top Clases por métodos y líneas:")
     for idx, c in enumerate(data["top_rankings"]["top_classes"][:top_limit], start=1):
@@ -428,9 +404,7 @@ def main() -> None:
         )
 
     print("\n⚙️ Top Funciones por líneas y complejidad:")
-    for idx, fn in enumerate(
-        data["top_rankings"]["top_functions"][:top_limit], start=1
-    ):
+    for idx, fn in enumerate(data["top_rankings"]["top_functions"][:top_limit], start=1):
         status = "⚠️ ALERTA" if fn["is_god"] else "✓ OK"
         print(
             f"   {idx}. [{status}] {fn['file_path']}:{fn['lineno']} def {fn['name']} ({fn['lines_count']} LOC, complejidad {fn['complexity']})"
@@ -440,16 +414,12 @@ def main() -> None:
     if summary["requires_refactoring_review"]:
         print("💡 SUGERENCIA PARA EL LLM / INGENIERO:")
         print("   Se encontraron componentes que superan los umbrales determinísticos.")
-        print(
-            "   Evalúe aplicar refactorizaciones como Extract Class, Extract Method o desacoplar módulos."
-        )
+        print("   Evalúe aplicar refactorizaciones como Extract Class, Extract Method o desacoplar módulos.")
         print("=" * 70)
         if args.strict:
             sys.exit(1)
     else:
-        print(
-            "🎉 No se detectaron componentes Dios. El código cumple los estándares de tamaño."
-        )
+        print("🎉 No se detectaron componentes Dios. El código cumple los estándares de tamaño.")
         print("=" * 70)
     sys.exit(0)
 

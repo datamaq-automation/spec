@@ -1,4 +1,4 @@
-"""test_architecture.py — El Guantelete de Restricciones Extremas (Clean Architecture & DDD).
+"""tests/test_architecture.py — El Guantelete de Restricciones Extremas (Clean Architecture & DDD).
 
 Inspirado en la filosofía de Robert C. Martin ("Uncle Bob") sobre el desarrollo asistido por agentes IA:
 "Rodear a los agentes de restricciones extremas para tener máxima confianza en el código producido."
@@ -190,35 +190,23 @@ def verify_architecture_layers(root_dir: Path | None = None) -> list[str]:
 
             imports = extract_imports(tree)
             for module_name, lineno, _ in imports:
-                if "src/domain" in rel_path and any(
-                    module_name.startswith(pkg) for pkg in domain_forbidden
-                ):
-                    errors.append(
-                        f"[DOMINIO VIOLADO] {rel_path}:{lineno} importa módulo prohibido '{module_name}'."
-                    )
+                if "src/domain" in rel_path and any(module_name.startswith(pkg) for pkg in domain_forbidden):
+                    errors.append(f"[DOMINIO VIOLADO] {rel_path}:{lineno} importa módulo prohibido '{module_name}'.")
 
                 elif "src/application" in rel_path and any(
                     module_name.startswith(pkg) for pkg in application_forbidden
                 ):
-                    errors.append(
-                        f"[APLICACIÓN VIOLADA] {rel_path}:{lineno} importa módulo prohibido '{module_name}'."
-                    )
+                    errors.append(f"[APLICACIÓN VIOLADA] {rel_path}:{lineno} importa módulo prohibido '{module_name}'.")
 
-                elif "src/adapters" in rel_path and any(
-                    module_name.startswith(pkg) for pkg in adapters_forbidden
-                ):
+                elif "src/adapters" in rel_path and any(module_name.startswith(pkg) for pkg in adapters_forbidden):
                     errors.append(
                         f"[ADAPTADORES VIOLADO] {rel_path}:{lineno} importa módulo prohibido '{module_name}'."
                     )
 
                 elif (
-                    "src/infrastructure/fastapi/routers" in rel_path
-                    or "src/infrastructure/fastapi/routes" in rel_path
+                    "src/infrastructure/fastapi/routers" in rel_path or "src/infrastructure/fastapi/routes" in rel_path
                 ):
-                    if any(
-                        module_name.startswith(pkg)
-                        for pkg in ("sqlalchemy", "sqlmodel")
-                    ):
+                    if any(module_name.startswith(pkg) for pkg in ("sqlalchemy", "sqlmodel")):
                         errors.append(
                             f"[THIN CONTROLLER VIOLADO] {rel_path}:{lineno} importa '{module_name}' directamente (debe delegar en use cases)."
                         )
@@ -295,11 +283,7 @@ def verify_type_annotations(root_dir: Path | None = None) -> list[str]:
                     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                         func_name = node.name
                         # Ignorar métodos mágicos especiales excepto __init__
-                        if (
-                            func_name.startswith("__")
-                            and func_name.endswith("__")
-                            and func_name != "__init__"
-                        ):
+                        if func_name.startswith("__") and func_name.endswith("__") and func_name != "__init__":
                             continue
 
                         # 1. Verificar retorno tipado (excepto __init__)
@@ -350,9 +334,7 @@ def verify_no_hardcoded_secrets(root_dir: Path | None = None) -> list[str]:
             "Connection string con contraseña en código fuente",
         ),
         (
-            re.compile(
-                r"""['"]eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}""", re.IGNORECASE
-            ),
+            re.compile(r"""['"]eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}""", re.IGNORECASE),
             "Token JWT quemado en código fuente",
         ),
     ]
@@ -378,11 +360,65 @@ def verify_no_hardcoded_secrets(root_dir: Path | None = None) -> list[str]:
                         continue
                     for pattern, desc in suspicious_patterns:
                         if pattern.search(line):
-                            errors.append(
-                                f"[SECRETO HARDCODEADO] {rel_path}:{lineno} {desc}. Centralice en Settings."
-                            )
+                            errors.append(f"[SECRETO HARDCODEADO] {rel_path}:{lineno} {desc}. Centralice en Settings.")
             except Exception:
                 pass
+
+    return errors
+
+
+# ==============================================================================
+# 6. Verificación de Cabecera con Path Relativo (Trazabilidad Canónica)
+# ==============================================================================
+
+
+def verify_relative_path_headers(root_dir: Path | None = None) -> list[str]:
+    """Verifica que todo archivo .py (excepto __init__.py) comience con su ruta relativa."""
+    root = root_dir or find_project_root()
+    errors: list[str] = []
+
+    scan_dirs = [root / "src", root / "tests"]
+
+    for base_dir in scan_dirs:
+        if not base_dir.exists():
+            continue
+
+        for current_root, _, files in os.walk(base_dir):
+            for file in files:
+                if not file.endswith(".py") or file == "__init__.py":
+                    continue
+
+                full_path = Path(current_root) / file
+                rel_path = full_path.relative_to(root).as_posix()
+
+                try:
+                    tree = parse_ast_safely(full_path)
+                    docstring = ast.get_docstring(tree) if tree else None
+                    first_line = ""
+                    with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
+                        for line in f:
+                            stripped = line.strip()
+                            if stripped:
+                                first_line = stripped
+                                break
+
+                    has_header = False
+                    if (
+                        docstring
+                        and rel_path in docstring.strip().splitlines()[0]
+                        or first_line.startswith("#")
+                        and rel_path in first_line
+                        or first_line.startswith(('"""', "'''"))
+                        and rel_path in first_line
+                    ):
+                        has_header = True
+
+                    if not has_header:
+                        errors.append(
+                            f'[CABECERA FALTANTE] {rel_path} debe comenzar con docstring o comentario con su ruta relativa exacta: """{rel_path}"""'
+                        )
+                except (OSError, UnicodeDecodeError) as e:
+                    errors.append(f"[ERROR LECTURA] {rel_path}: {e}")
 
     return errors
 
@@ -395,45 +431,48 @@ def verify_no_hardcoded_secrets(root_dir: Path | None = None) -> list[str]:
 def test_init_files_must_be_empty():
     """Restricción 1: El 100% de los archivos __init__.py deben tener exactamente 0 bytes."""
     errors = verify_init_files_empty()
-    assert not errors, (
-        f"\n❌ Se detectaron {len(errors)} archivos __init__.py no vacíos:\n\n"
-        + "\n".join(f"  • {err}" for err in errors)
+    assert not errors, f"\n❌ Se detectaron {len(errors)} archivos __init__.py no vacíos:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
     )
 
 
 def test_clean_architecture_compliance():
     """Restricción 2: Las dependencias entre capas deben respetar Clean Architecture y DDD."""
     errors = verify_architecture_layers()
-    assert not errors, (
-        f"\n❌ Se detectaron {len(errors)} violaciones de Clean Architecture:\n\n"
-        + "\n".join(f"  • {err}" for err in errors)
+    assert not errors, f"\n❌ Se detectaron {len(errors)} violaciones de Clean Architecture:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
     )
 
 
 def test_no_relative_imports():
     """Restricción 3: Todos los imports en src/ deben ser absolutos ('from src...')."""
     errors = verify_no_relative_imports()
-    assert not errors, (
-        f"\n❌ Se detectaron {len(errors)} imports relativos prohibidos:\n\n"
-        + "\n".join(f"  • {err}" for err in errors)
+    assert not errors, f"\n❌ Se detectaron {len(errors)} imports relativos prohibidos:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
     )
 
 
 def test_all_functions_have_type_annotations():
     """Restricción 4: 100% de funciones en domain y application deben tener Type Hints."""
     errors = verify_type_annotations()
-    assert not errors, (
-        f"\n❌ Se detectaron {len(errors)} funciones sin tipado estricto:\n\n"
-        + "\n".join(f"  • {err}" for err in errors)
+    assert not errors, f"\n❌ Se detectaron {len(errors)} funciones sin tipado estricto:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
     )
 
 
 def test_no_hardcoded_secrets():
     """Restricción 5: Prohibido hardcodear contraseñas, tokens y connection strings en código."""
     errors = verify_no_hardcoded_secrets()
-    assert not errors, (
-        f"\n❌ Se detectaron {len(errors)} secretos hardcodeados:\n\n"
-        + "\n".join(f"  • {err}" for err in errors)
+    assert not errors, f"\n❌ Se detectaron {len(errors)} secretos hardcodeados:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
+    )
+
+
+def test_relative_path_headers():
+    """Restricción 6: Todo archivo .py (excepto __init__.py) debe comenzar con su ruta relativa."""
+    errors = verify_relative_path_headers()
+    assert not errors, f"\n❌ Se detectaron {len(errors)} archivos sin cabecera de path relativo:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
     )
 
 
@@ -454,6 +493,7 @@ def main() -> None:
         ("3. Imports Absolutos (Prohibidos relativos)", verify_no_relative_imports()),
         ("4. Tipado Estricto (Domain & Application)", verify_type_annotations()),
         ("5. Seguridad & Secretos (Cero hardcoded)", verify_no_hardcoded_secrets()),
+        ("6. Cabecera de Path Relativo (Trazabilidad)", verify_relative_path_headers()),
     ]
 
     total_errors: list[str] = []
@@ -470,15 +510,11 @@ def main() -> None:
     print("\n" + "=" * 70)
     if total_errors:
         print(f"💥 RESULTADO FINAL: {len(total_errors)} violaciones detectadas.")
-        print(
-            "Los agentes o desarrolladores deben corregir el código para superar el guantelete."
-        )
+        print("Los agentes o desarrolladores deben corregir el código para superar el guantelete.")
         print("=" * 70)
         sys.exit(1)
     else:
-        print(
-            "🎉 RESULTADO FINAL: 100% de las restricciones arquitectónicas fueron superadas con éxito."
-        )
+        print("🎉 RESULTADO FINAL: 100% de las restricciones arquitectónicas fueron superadas con éxito.")
         print("=" * 70)
         sys.exit(0)
 

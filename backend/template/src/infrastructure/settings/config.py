@@ -1,7 +1,9 @@
+"""src/infrastructure/settings/config.py — Centralización de variables de entorno."""
+
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import List
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -23,7 +25,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = Field(default="backend-api")
     VERSION: str = Field(default="1.0.0")
     API_V1_PREFIX: str = Field(default="/api/v1")
-    ALLOWED_HOSTS: List[str] = Field(default_factory=lambda: ["*"])
+    ALLOWED_HOSTS: list[str] = Field(default_factory=lambda: ["*"])
 
     # Seguridad
     SECRET_KEY: str = Field(default="change-this-insecure-secret-key-in-production")
@@ -33,6 +35,6 @@ class Settings(BaseSettings):
     DATABASE_URL: str = Field(default="sqlite+aiosqlite:///./app.db")
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     return Settings()

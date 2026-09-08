@@ -1,7 +1,10 @@
+"""src/main.py — Entrypoint principal de la aplicación FastAPI."""
+
 from __future__ import annotations
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from src.infrastructure.settings.config import get_settings
 from src.infrastructure.settings.logger import logger
 
