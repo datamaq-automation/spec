@@ -252,7 +252,15 @@ Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro 
 6. **`check_no_vue_in_core`:** Garantiza que `src/core/` sea 100% TypeScript puro (.ts) prohibiendo componentes `.vue`.
 7. **`check_relative_path_headers`:** Exige que todo archivo `.ts`, `.js`, `.mjs`, `.vue` en `src/`, `scripts/` y `tests/` comience con un comentario indicando su ruta relativa exacta.
 
-### 5.3. Estándares de Calidad, Trazabilidad & Commits Atómicos
+### 5.3. Detección Determinística de Código Muerto y Sobreingeniería (`scripts/test_clean_design.mjs`)
+Analiza la estructura de la SPA para prevenir deuda técnica y abstracciones prematuras:
+1. **`UNREACHABLE_FILE`:** Detecta archivos huérfanos en `src/` no alcanzables desde `main.ts`, router, `App.vue` ni suites de tests.
+2. **`EMPTY_SHELL_COMPONENT`:** Identifica componentes `.vue` redundantes que solo encapsulan un componente hijo sin lógica, props ni eventos.
+3. **`SPECULATIVE_MICRO_FILE`:** Detecta archivos `.ts` micro-fragmentados (< 8 LOC, excluyendo barriles y `.d.ts`).
+
+Soporta ejecución humana (`node scripts/test_clean_design.mjs` o `npm run audit:clean`), modo estricto para CI (`--strict`) y salida estructurada para agentes IA (`--json`).
+
+### 5.4. Estándares de Calidad, Trazabilidad & Commits Atómicos
 * **Marco de Referencia:** Alineación con buenas prácticas de calidad de producto (ISO/IEC 25010), accesibilidad (WCAG 2.1) y seguridad de la información (ISO/IEC 27001).
 * **Lineamiento de Commits Atómicos (Principio de Responsabilidad Única en Git):**
   * **Una Unidad Lógica por Commit:** Cada commit debe representar un cambio único, autocontenido, indivisible y con propósito claro. Queda estrictamente prohibido agrupar en un único commit features nuevas, refactorizaciones, corrección de bugs no relacionados y ajustes de formato cosmético.
@@ -271,7 +279,7 @@ Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro 
     * `perf`: Optimizaciones de renderizado, bundle size o tiempos de carga.
     * `style`: Ajustes cosméticos o de formato sin impacto funcional.
 
-### 5.4. Matriz de Verificación Automatizada Previa a Despliegues
+### 5.5. Matriz de Verificación Automatizada Previa a Despliegues
 
 Todos los cambios deben superar el 100% de la siguiente batería de comandos antes de integrarse a la rama principal o desplegarse a producción:
 
@@ -286,11 +294,15 @@ npm run type-check        # vue-tsc --noEmit
 npm run format:check      # prettier --check .
 
 # 4. Validación de Arquitectura y Guantelete de Restricciones
-node test_architecture.mjs
+node scripts/test_architecture.mjs
 
-# 5. Suite de Pruebas (Unit + Component) con cobertura >= 85%
+# 5. Auditoría de Componentes Dios y Sobreingeniería (YAGNI & Dead Code)
+node scripts/test_god_components.mjs --strict
+node scripts/test_clean_design.mjs --strict
+
+# 6. Suite de Pruebas (Unit + Component) con cobertura >= 85%
 npm run test:unit -- --coverage
 
-# 6. Pruebas End-to-End (Playwright)
+# 7. Pruebas End-to-End (Playwright)
 npm run test:e2e
 ```

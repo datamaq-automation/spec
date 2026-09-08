@@ -269,7 +269,17 @@ Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro 
 5. **`test_no_hardcoded_secrets`:** Detecta y bloquea contraseñas, tokens JWT, API keys o connection strings quemadas en código fuente.
 6. **`test_relative_path_headers`:** Exige que todo archivo `.py` en `src/` y `tests/` comience con un docstring o comentario con su ruta relativa exacta (excluyendo `__init__.py` que debe tener 0 bytes).
 
-### 5.3. Estándares de Calidad, Trazabilidad & Commits Atómicos
+### 5.3. Detección Determinística de Código Muerto y Sobreingeniería (`tests/test_clean_design.py`)
+Complementando el Guantelete y el detector de Componentes Dios, el archivo `tests/test_clean_design.py` analiza el AST local ($0 tokens) para evitar los sesgos de sobreingeniería y código residual típicos de agentes IA:
+1. **`GHOST_INTERFACE`:** Alerta cuando un `Protocol` o `ABC` tiene solo una implementación concreta en `src/` (y 0 mocks en `tests/`), aplicando YAGNI.
+2. **`MIDDLE_MAN_METHOD`:** Identifica métodos que solo delegan argumentos de forma idéntica en otro objeto sin aportar valor ni lógica.
+3. **`DEEP_INHERITANCE`:** Detecta árboles de herencia con profundidad superior a 2 niveles (`DIT > 2`), promoviendo composición.
+4. **`ORPHAN_PRIVATE_SYMBOL`:** Identifica funciones, clases o métodos privados declarados pero nunca referenciados en el módulo.
+5. **`SPECULATIVE_MICRO_FILE`:** Detecta archivos micro-fragmentados (< 10 LOC) que dispersan el contexto sin justificación.
+
+Soporta ejecución humana (`python3 tests/test_clean_design.py`), modo estricto para CI (`--strict`) y salida estructurada para agentes IA (`--json`).
+
+### 5.4. Estándares de Calidad, Trazabilidad & Commits Atómicos
 * **Marco de Referencia:** Alineación con buenas prácticas de calidad de producto (ISO/IEC 25010) y seguridad de la información (ISO/IEC 27001).
 * **Lineamiento de Commits Atómicos (Principio de Responsabilidad Única en Git):**
   * **Una Unidad Lógica por Commit:** Cada commit debe representar un cambio único, autocontenido, indivisible y con propósito claro. Queda estrictamente prohibido agrupar en un único commit features nuevas, refactorizaciones, corrección de bugs no relacionados y ajustes de formato cosmético.
@@ -287,7 +297,7 @@ Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro 
     * `chore`: Mantenimiento de configuración, dependencias o herramientas sin impacto en código de producción.
     * `perf`: Optimizaciones de rendimiento o uso eficiente de memoria/recursos.
 
-### 5.4. Matriz de Verificación Automatizada Previa a Despliegues
+### 5.5. Matriz de Verificación Automatizada Previa a Despliegues
 
 Todos los cambios deben superar el 100% de la siguiente batería de comandos antes de integrarse a la rama principal o desplegarse a producción:
 
@@ -302,11 +312,15 @@ pyright src/
 # 3. Validación de Arquitectura y Guantelete de Restricciones (AST)
 python3 tests/test_architecture.py
 
-# 4. Suite Completa de Pruebas en Pytest (Unit, Integration, E2E y Gauntlet)
+# 4. Auditoría de Componentes Dios (Monolitos) y Sobreingeniería (YAGNI & Dead Code)
+python3 tests/test_god_components.py --strict
+python3 tests/test_clean_design.py --strict
+
+# 5. Suite Completa de Pruebas en Pytest (Unit, Integration, E2E y Gauntlet)
 pytest --maxfail=1 --disable-warnings -v
 ```
 
-### 5.5. Configuración del Editor (Pylance / VS Code)
+### 5.6. Configuración del Editor (Pylance / VS Code)
 
 Todo repositorio debe incluir dos archivos de configuración de tipos para garantizar que el LSP del editor (Pylance) y el análisis estático de CI (Pyright) emitan **exactamente los mismos diagnósticos**:
 

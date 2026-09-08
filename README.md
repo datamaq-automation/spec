@@ -103,9 +103,9 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 | **[`scripts/init.sh`](scripts/init.sh)** | Script CLI (Bash) | Inicializador canónico para Linux/macOS (descarga scaffolding, spec y corre el Guantelete + God Components). |
 | **[`scripts/init.ps1`](scripts/init.ps1)** | Script CLI (PowerShell) | Inicializador canónico para Windows PowerShell (descarga scaffolding, spec y corre el Guantelete + God Components). |
 | **[`backend/srs-spec-backend-fastapi.md`](backend/srs-spec-backend-fastapi.md)** | Spec | Plantilla SSOT de backend en 5 secciones modulares con placeholders `{reemplazar_...}`. |
-| **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py`, `main.py`, `test_architecture.py` y `test_god_components.py`. |
+| **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py`, `main.py`, `test_architecture.py`, `test_god_components.py` y `test_clean_design.py`. |
 | **[`frontend/srs-spec-frontend-vue-vite.md`](frontend/srs-spec-frontend-vue-vite.md)** | Spec | Plantilla SSOT de frontend SPA (Vue + Vite) en 5 secciones modulares. |
-| **[`frontend/template/`](frontend/template/)** | Scaffolding | Estructura canónica FSD completa con `package.json`, cliente Axios, `test_architecture.mjs` y `test_god_components.mjs`. |
+| **[`frontend/template/`](frontend/template/)** | Scaffolding | Estructura canónica FSD completa con `package.json`, cliente Axios, `test_architecture.mjs`, `test_god_components.mjs` y `test_clean_design.mjs`. |
 | **[`.gitignore`](.gitignore)** | Config | Exclusiones estándar para entornos virtuales, `.env`, `node_modules`, cachés y editores. |
 
 ---
@@ -196,6 +196,39 @@ pytest tests/test_god_components.py -v        # Como suite de Pytest
 # Frontend (Node.js)
 node scripts/test_god_components.mjs          # Reporte en consola
 node scripts/test_god_components.mjs --json   # Salida JSON estructurada para LLMs
+```
+
+---
+
+## 🧹 Detección Determinística de Código Muerto y Sobreingeniería (`test_clean_design`)
+
+Ambas plantillas incorporan analizadores estáticos deterministas de zero-dependencies orientados a combatir la **abstracción prematura**, las **interfaces fantasma** y el **código residual** que suelen acumular los agentes de IA (violaciones de YAGNI y KISS):
+
+### Antipatrones Auditados:
+- **Backend (Python / AST):**
+  - `GHOST_INTERFACE`: Protocolos o clases abstractas (`ABC`/`Protocol`) con 1 sola implementación concreta y sin mocks en tests.
+  - `MIDDLE_MAN_METHOD`: Métodos pasamanos de 1 línea que solo delegan argumentos idénticos sin lógica ni política.
+  - `DEEP_INHERITANCE`: Clases con profundidad de herencia superior a 2 niveles (`DIT > 2`).
+  - `ORPHAN_PRIVATE_SYMBOL`: Funciones, clases o métodos privados no llamados ni referenciados en su módulo.
+  - `SPECULATIVE_MICRO_FILE`: Archivos micro-fragmentados (< 10 LOC) que dispersan el contexto.
+- **Frontend (Node.js / Grafo de Dependencias):**
+  - `UNREACHABLE_FILE`: Archivos huérfanos desconectados del grafo de importación (`main.ts`, router, `App.vue`, tests).
+  - `EMPTY_SHELL_COMPONENT`: Componentes SFC de Vue que solo encapsulan un componente hijo sin lógica, props ni slots.
+  - `SPECULATIVE_MICRO_FILE`: Archivos `.ts` de menos de 8 LOC fuera de barriles y declaraciones `.d.ts`.
+
+### Comandos de Ejecución:
+```bash
+# Backend
+python3 tests/test_clean_design.py          # Reporte en consola
+python3 tests/test_clean_design.py --strict # Modo estricto (falla build si hay violaciones)
+python3 tests/test_clean_design.py --json   # Salida JSON para LLMs / agentes
+pytest tests/test_clean_design.py -v        # Suite en Pytest
+
+# Frontend
+node scripts/test_clean_design.mjs          # Reporte en consola
+node scripts/test_clean_design.mjs --strict # Modo estricto
+node scripts/test_clean_design.mjs --json   # Salida JSON para LLMs
+npm run audit:clean                         # Shortcut npm
 ```
 
 ---
