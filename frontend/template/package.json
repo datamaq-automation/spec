@@ -12,7 +12,9 @@
     "test:coverage": "vitest run --coverage",
     "test:architecture": "node scripts/test_architecture.mjs",
     "test:god": "node scripts/test_god_components.mjs",
-    "test:all": "node scripts/test_architecture.mjs && node scripts/test_god_components.mjs --strict",
+    "test:clean": "node scripts/test_clean_design.mjs",
+    "audit:clean": "node scripts/test_clean_design.mjs",
+    "test:all": "node scripts/test_architecture.mjs && node scripts/test_god_components.mjs --strict && node scripts/test_clean_design.mjs --strict",
     "format:check": "prettier --check .",
     "format": "prettier --write ."
   },

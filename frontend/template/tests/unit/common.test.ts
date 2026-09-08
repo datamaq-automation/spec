@@ -2,6 +2,8 @@
 import { describe, expect, it } from "vitest"
 import { formatDate } from "@/shared/utils/index"
 import { healthSchema } from "@/core/schemas/common"
+import { apiClient } from "@/core/http/client"
+import type { ApiResponse } from "@/core/types/common"
 
 describe("Unit Tests — Shared Utils & Core Schemas", () => {
   it("formatDate should return ISO string", () => {
@@ -19,5 +21,12 @@ describe("Unit Tests — Shared Utils & Core Schemas", () => {
     const payload = { status: 123 }
     const result = healthSchema.safeParse(payload)
     expect(result.success).toBe(false)
+  })
+
+  it("apiClient should be instantiated with correct defaults", () => {
+    expect(apiClient).toBeDefined()
+    expect(apiClient.defaults.timeout).toBe(10000)
+    const response: ApiResponse<string> = { data: "pong", status: "success" }
+    expect(response.status).toBe("success")
   })
 })
