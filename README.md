@@ -36,6 +36,28 @@ curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/script
 # & ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.ps1).Content)) -Type backend -TargetDir .
 ```
 
+##### 🔄 Actualización de Proyectos Existentes (`--upgrade` / `-Upgrade`)
+Si tu repositorio ya cuenta con una versión anterior o ya personalizaste tus archivos de especificación, actualiza el ferramental de auditoría (`test_architecture` y `test_god_components`) sin sobreescribir `docs/` ni `src/`:
+
+```bash
+# Linux / macOS (Bash)
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.sh | bash -s -- backend . --upgrade
+
+# Windows (PowerShell)
+& ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.ps1).Content)) -Type backend -TargetDir . -Upgrade
+```
+
+##### ⚠️ Sobreescritura Forzada con Backup Automático (`--force` / `-Force`)
+Si necesitas reinstalar el scaffolding completo sobreescribiendo archivos existentes, el inicializador resguarda automáticamente una copia de seguridad con timestamp de tus especificaciones (`docs/*.backup.<timestamp>`):
+
+```bash
+# Linux / macOS (Bash)
+curl -fsSL https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.sh | bash -s -- backend . --force
+
+# Windows (PowerShell)
+& ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/datamaq-automation/spec/main/scripts/init.ps1).Content)) -Type backend -TargetDir . -Force
+```
+
 ---
 
 ### 📦 Opción Alternativa: Descarga Mínima (Solo Spec + Validador)
@@ -95,7 +117,7 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 | **1. Contexto Estratégico & Propuesta de Valor** | Foco de mercado, Buyer/User Personas, Pilares de Valor de la solución, Operaciones y Habilitaciones. |
 | **2. Modelo de Negocio Canvas (BMC 9 Bloques)** | Matriz visual de 9 bloques, Organigrama de Agentes IA y Escalera de Valor. |
 | **3. Requisitos del Sistema (SRS)** | Requisitos Funcionales (FR-01 al FR-xx) y No Funcionales (NFR-01 al NFR-xx: p95, throughput, seguridad). |
-| **4. Stack Tecnológico, Arquitectura & Convenciones** | Arquitectura por capas, Configuración centralizada, Logging, y **Las 7 Reglas Innegociables**. |
+| **4. Stack Tecnológico, Arquitectura & Convenciones** | Arquitectura por capas, Configuración centralizada, Logging, y **Las 8 Reglas Innegociables**. |
 | **5. Gobernanza Normativa, Calidad & Matriz de Pruebas** | Estándares de calidad ISO, Commits Atómicos (Conventional Commits) y Matriz de Verificación. |
 
 ---
@@ -109,7 +131,7 @@ Este repositorio implementa esa filosofía mediante un pipeline automatizado y d
 
 ---
 
-## 🧪 Backend — Las 5 Baterías del Guantelete (`test_architecture.py`)
+## 🧪 Backend — Las 6 Baterías del Guantelete (`test_architecture.py`)
 
 El archivo [`backend/template/tests/test_architecture.py`](backend/template/tests/test_architecture.py) analiza el Árbol de Sintaxis Abstracta (AST) de todos los archivos en `src/` y `tests/` con **cero dependencias externas**:
 
@@ -118,6 +140,7 @@ El archivo [`backend/template/tests/test_architecture.py`](backend/template/test
 3. **`test_no_relative_imports()`:** Prohíbe imports relativos en `src/` (`from . import ...` o `from .. import ...`), obligando al uso de imports absolutos (`from src...`).
 4. **`test_all_functions_have_type_annotations()`:** Exige que el 100% de las funciones en `src/domain` y `src/application` declaren Type Hints en todos sus parámetros y tipo de retorno.
 5. **`test_no_hardcoded_secrets()`:** Detecta y bloquea contraseñas, tokens JWT, API keys o connection strings quemadas en código fuente.
+6. **`test_relative_path_headers()`:** Exige que todo archivo `.py` en `src/` y `tests/` comience con un docstring o comentario con su ruta relativa exacta (excluyendo `__init__.py` que debe tener 0 bytes).
 
 ### Modos de Ejecución:
 
@@ -131,9 +154,9 @@ python3 tests/test_architecture.py
 
 ---
 
-## 🧪 Frontend — Las 6 Baterías del Guantelete (`test_architecture.mjs`)
+## 🧪 Frontend — Las 7 Baterías del Guantelete (`test_architecture.mjs`)
 
-El archivo [`frontend/template/scripts/test_architecture.mjs`](frontend/template/scripts/test_architecture.mjs) analiza estáticamente el árbol de archivos de `src/` (TypeScript + Vue) con **cero dependencias externas**:
+El archivo [`frontend/template/scripts/test_architecture.mjs`](frontend/template/scripts/test_architecture.mjs) analiza estáticamente el árbol de archivos de `src/`, `scripts/` y `tests/` (TypeScript + Vue) con **cero dependencias externas**:
 
 1. **`check_layer_dependencies()`:** Valida la regla de dependencia de capas FSD (`shared` puro, `core` acotado, `features` desacopladas, `app` orquestadora).
 2. **`check_no_explicit_any()`:** Prohíbe `any`, `@ts-ignore`, `@ts-nocheck` y `@ts-expect-error` en `src/`.
@@ -141,6 +164,7 @@ El archivo [`frontend/template/scripts/test_architecture.mjs`](frontend/template
 4. **`check_absolute_imports()`:** Prohíbe imports relativos entre capas (`../`), exigiendo el alias `@/`.
 5. **`check_no_hardcoded_secrets()`:** Detecta y bloquea API keys, tokens JWT o credenciales quemadas en código fuente.
 6. **`check_no_vue_in_core()`:** Garantiza que `src/core/` sea 100% TypeScript puro (.ts) prohibiendo componentes `.vue`.
+7. **`check_relative_path_headers()`:** Exige que todo archivo `.ts`, `.js`, `.mjs`, `.vue` en `src/`, `scripts/` y `tests/` comience con un comentario de su ruta relativa exacta.
 
 ### Modo de Ejecución:
 

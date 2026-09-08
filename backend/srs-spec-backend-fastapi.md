@@ -248,6 +248,8 @@
    * Prohibidos los imports relativos (`from . import ...` o `from .. import ...`). Se exige siempre sintaxis absoluta `from src....`.
 7. **Tipado Estricto Exhaustivo:**
    * Prohibidas colecciones o variables sin tipo explícito (e.g. `list[str]`, `dict[str, Any]`). Toda función debe especificar tipos de parámetros y retorno validados por Pyright.
+8. **Cabecera de Path Relativo (Trazabilidad):**
+   * Todo archivo fuente `.py` en `src/` y `tests/` debe comenzar con un docstring o comentario indicando su ruta relativa exacta respecto a la raíz del repositorio (e.g. `"""src/main.py — ..."""` o `"""tests/test_architecture.py — ..."""`). Se excluyen terminantemente los archivos `__init__.py` que deben tener exactamente 0 bytes según la Regla 2.
 
 ---
 
@@ -259,12 +261,13 @@
 
 Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro de un marco de verificación estricto, automatizado y determinista donde ningún código se fusiona a producción sin superar el 100% de los invariantes formales.
 
-### 5.2. Las 5 Baterías del Guantelete (`tests/test_architecture.py`)
+### 5.2. Las 6 Baterías del Guantelete (`tests/test_architecture.py`)
 1. **`test_init_files_must_be_empty`:** Comprueba que todos los `__init__.py` en `src/` y `tests/` tengan exactamente 0 bytes (sin código, docstrings ni imports).
 2. **`test_clean_architecture_compliance`:** Valida la regla de dependencia de capas (Domain puro, Application desacoplada, Adapters agnósticos, Routers delgados).
 3. **`test_no_relative_imports`:** Prohíbe imports relativos en `src/` (`from . import ...` o `from .. import ...`), obligando al uso de imports absolutos (`from src...`).
 4. **`test_all_functions_have_type_annotations`:** Exige que el 100% de las funciones en `src/domain` y `src/application` declaren Type Hints en todos sus parámetros y tipo de retorno.
 5. **`test_no_hardcoded_secrets`:** Detecta y bloquea contraseñas, tokens JWT, API keys o connection strings quemadas en código fuente.
+6. **`test_relative_path_headers`:** Exige que todo archivo `.py` en `src/` y `tests/` comience con un docstring o comentario con su ruta relativa exacta (excluyendo `__init__.py` que debe tener 0 bytes).
 
 ### 5.3. Estándares de Calidad, Trazabilidad & Commits Atómicos
 * **Marco de Referencia:** Alineación con buenas prácticas de calidad de producto (ISO/IEC 25010) y seguridad de la información (ISO/IEC 27001).

@@ -230,6 +230,8 @@ export default defineConfig({
    * URLs de APIs, feature flags, timeouts y constantes de integración provienen de variables `VITE_*` (públicas) o de configuración en `shared/config/`, nunca hardcodeadas.
 7. **Cero Secretos en el Cliente:**
    * Prohibido hardcodear tokens, API keys privadas o credenciales en `src/`. El bundle cliente solo expone lo estrictamente público.
+8. **Cabecera de Path Relativo (Trazabilidad):**
+   * Todo archivo fuente (`.ts`, `.tsx`, `.vue`, `.js`, `.jsx`, `.mjs`) en `src/`, `scripts/` y `tests/` debe comenzar con un comentario indicando su ruta relativa exacta respecto a la raíz del repositorio (e.g. `// src/main.ts` o `<!-- src/App.vue -->`).
 
 ---
 
@@ -241,13 +243,14 @@ export default defineConfig({
 
 Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro de un marco de verificación estricto, automatizado y determinista donde ningún código se fusiona a producción sin superar el 100% de los invariantes formales.
 
-### 5.2. Las 6 Baterías del Guantelete (`test_architecture.mjs`)
+### 5.2. Las 7 Baterías del Guantelete (`test_architecture.mjs`)
 1. **`check_layer_dependencies`:** Valida la regla de dependencia de capas FSD (shared puro, core acotado, features desacopladas, app orquestadora).
 2. **`check_no_explicit_any`:** Prohíbe `any`, `@ts-ignore`, `@ts-nocheck` y `@ts-expect-error` en `src/`.
 3. **`check_barrel_control`:** Prohíbe `export *` en cascada fuera de `features/`; el barril de API pública (`export *`) solo se permite en `features/{feature}/index.ts`.
 4. **`check_absolute_imports`:** Prohíbe imports relativos entre capas (`../`), exigiendo alias `@/`.
 5. **`check_no_hardcoded_secrets`:** Detecta y bloquea API keys, tokens JWT o credenciales quemadas en código fuente.
 6. **`check_no_vue_in_core`:** Garantiza que `src/core/` sea 100% TypeScript puro (.ts) prohibiendo componentes `.vue`.
+7. **`check_relative_path_headers`:** Exige que todo archivo `.ts`, `.js`, `.mjs`, `.vue` en `src/`, `scripts/` y `tests/` comience con un comentario indicando su ruta relativa exacta.
 
 ### 5.3. Estándares de Calidad, Trazabilidad & Commits Atómicos
 * **Marco de Referencia:** Alineación con buenas prácticas de calidad de producto (ISO/IEC 25010), accesibilidad (WCAG 2.1) y seguridad de la información (ISO/IEC 27001).
