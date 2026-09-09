@@ -106,6 +106,7 @@ if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs }; if (!(Test-P
 | **[`backend/template/`](backend/template/)** | Scaffolding | Estructura canónica completa de carpetas, `__init__.py` vacíos, `config.py`, `logger.py`, `main.py`, `test_architecture.py`, `test_god_components.py` y `test_clean_design.py`. |
 | **[`frontend/srs-spec-frontend-vue-vite.md`](frontend/srs-spec-frontend-vue-vite.md)** | Spec | Plantilla SSOT de frontend SPA (Vue + Vite) en 5 secciones modulares. |
 | **[`frontend/template/`](frontend/template/)** | Scaffolding | Estructura canónica FSD completa con `package.json`, cliente Axios, `test_architecture.mjs`, `test_god_components.mjs` y `test_clean_design.mjs`. |
+| **[`docs/guia-andamiaje-proyectos.md`](docs/guia-andamiaje-proyectos.md)** | Pedagogía | Guía de andamiaje cognitivo, mayéutica y metacognición para formular proyectos y especificaciones. |
 | **[`.gitignore`](.gitignore)** | Config | Exclusiones estándar para entornos virtuales, `.env`, `node_modules`, cachés y editores. |
 
 ---

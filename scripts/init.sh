@@ -103,7 +103,9 @@ if [[ "$PROJECT_EXISTS" == "true" && "$MODE" == "init" ]]; then
 fi
 
 if [[ "$MODE" == "upgrade" ]]; then
-    echo "🔄 Actualizando validadores arquitectónicos y pre-commit hooks..."
+    echo "🔄 Actualizando validadores arquitectónicos, tooling y guía pedagógica..."
+    mkdir -p "${TARGET_DIR}/docs"
+    curl -fsSL "${RAW_BASE_URL}/docs/guia-andamiaje-proyectos.md" -o "${TARGET_DIR}/docs/guia-andamiaje-proyectos.md"
     if [[ "$TYPE" == "backend" ]]; then
         mkdir -p "${TARGET_DIR}/tests"
         curl -fsSL "${RAW_BASE_URL}/backend/template/tests/test_architecture.py" -o "${TARGET_DIR}/tests/test_architecture.py"
@@ -129,14 +131,15 @@ else
     echo "📦 1/3 Descargando scaffolding del template ($TYPE)..."
     curl -sL "$TARBALL_URL" | tar -xzf - --strip-components=3 -C "$TARGET_DIR" "spec-${BRANCH}/${TYPE}/template"
 
-    # 2. Descargar la especificación técnica SRS a docs/
-    echo "📄 2/3 Descargando especificación SRS a docs/..."
+    # 2. Descargar la especificación técnica SRS y guía pedagógica a docs/
+    echo "📄 2/3 Descargando especificación SRS y guía pedagógica a docs/..."
     mkdir -p "${TARGET_DIR}/docs"
     if [[ "$TYPE" == "backend" ]]; then
         curl -fsSL "${RAW_BASE_URL}/backend/srs-spec-backend-fastapi.md" -o "$SPEC_PATH"
     else
         curl -fsSL "${RAW_BASE_URL}/frontend/srs-spec-frontend-vue-vite.md" -o "$SPEC_PATH"
     fi
+    curl -fsSL "${RAW_BASE_URL}/docs/guia-andamiaje-proyectos.md" -o "${TARGET_DIR}/docs/guia-andamiaje-proyectos.md"
 fi
 
 # Validar de inmediato el Guantelete de Restricciones

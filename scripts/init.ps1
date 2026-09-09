@@ -86,7 +86,10 @@ if ($ProjectExists -and (-not $Upgrade) -and (-not $Force)) {
 }
 
 if ($Upgrade) {
-    Write-Host "🔄 Actualizando validadores arquitectónicos y pre-commit hooks ($Type)..." -ForegroundColor Green
+    Write-Host "🔄 Actualizando validadores arquitectónicos, tooling y guía pedagógica ($Type)..." -ForegroundColor Green
+    $DocsDir = Join-Path $TargetDir 'docs'
+    if (-not (Test-Path $DocsDir)) { New-Item -ItemType Directory -Path $DocsDir -Force | Out-Null }
+    Invoke-WebRequest -Uri "$RawBaseUrl/docs/guia-andamiaje-proyectos.md" -OutFile (Join-Path $DocsDir 'guia-andamiaje-proyectos.md') -UseBasicParsing
     if ($Type -eq 'backend') {
         $TestsDir = Join-Path $TargetDir 'tests'
         if (-not (Test-Path $TestsDir)) { New-Item -ItemType Directory -Path $TestsDir -Force | Out-Null }
@@ -131,8 +134,8 @@ if ($Upgrade) {
             exit 1
         }
 
-        # 2. Descargar la especificación técnica SRS a docs/
-        Write-Host '📄 2/3 Descargando especificación SRS a docs/...' -ForegroundColor Green
+        # 2. Descargar la especificación técnica SRS y guía pedagógica a docs/
+        Write-Host '📄 2/3 Descargando especificación SRS y guía pedagógica a docs/...' -ForegroundColor Green
         if (-not (Test-Path $DocsDir)) {
             New-Item -ItemType Directory -Path $DocsDir -Force | Out-Null
         }
@@ -143,6 +146,7 @@ if ($Upgrade) {
             $SrsUrl = "$RawBaseUrl/frontend/srs-spec-frontend-vue-vite.md"
         }
         Invoke-WebRequest -Uri $SrsUrl -OutFile $SpecPath -UseBasicParsing
+        Invoke-WebRequest -Uri "$RawBaseUrl/docs/guia-andamiaje-proyectos.md" -OutFile (Join-Path $DocsDir 'guia-andamiaje-proyectos.md') -UseBasicParsing
     } finally {
         if (Test-Path $TempZip) { Remove-Item -Path $TempZip -Force -ErrorAction SilentlyContinue }
         if (Test-Path $TempExtract) { Remove-Item -Path $TempExtract -Recurse -Force -ErrorAction SilentlyContinue }

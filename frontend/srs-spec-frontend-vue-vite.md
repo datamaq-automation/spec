@@ -8,6 +8,8 @@
 > **Repositorio / Módulo:** `{organizacion_o_usuario}/{nombre_del_repositorio}`
 > **Tipo de Aplicación:** Frontend puro (SPA) — consume APIs externas mediante HTTP; sin SSR ni backend embebido.
 
+> 💡 **Acompañamiento Pedagógico:** Antes de completar esta plantilla, se recomienda consultar la [Guía de Andamiaje Pedagógico y Metacognición](docs/guia-andamiaje-proyectos.md) para reflexionar sobre los problemas de negocio, casos de borde y evitar la sobreingeniería.
+
 ---
 
 ## 1. Contexto Estratégico & Propuesta de Valor
