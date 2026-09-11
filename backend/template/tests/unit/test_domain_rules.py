@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 
 class SampleValueObject:
     def __init__(self, value: str) -> None:
@@ -16,8 +18,5 @@ def test_sample_value_object_success() -> None:
 
 
 def test_sample_value_object_empty_fails() -> None:
-    try:
+    with pytest.raises(ValueError, match="no puede estar vacío"):
         SampleValueObject("   ")
-        assert False, "Debe lanzar ValueError"
-    except ValueError as e:
-        assert "no puede estar vacío" in str(e)

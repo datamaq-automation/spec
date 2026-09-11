@@ -114,18 +114,19 @@ def verify_init_files_empty(root_dir: Path | None = None) -> list[str]:
 
 
 # ==============================================================================
-# 2. Verificación de Reglas de Capas Clean Architecture
+# 2. Verificación de Aislamiento de Dominio Puro (Core Agnóstico)
 # ==============================================================================
 
 
-def verify_architecture_layers(root_dir: Path | None = None) -> list[str]:
-    """Verifica el cumplimiento de la regla de dependencias entre capas."""
+def verify_domain_isolation(root_dir: Path | None = None) -> list[str]:
+    """Verifica que el Core de Dominio (src/domain) no importe frameworks o I/O externos."""
     root = root_dir or find_project_root()
     src_dir = root / "src"
+    domain_dir = src_dir / "domain"
     errors: list[str] = []
 
-    if not src_dir.exists():
-        return [f"[ERROR] No se encontró el directorio de código fuente: {src_dir}"]
+    if not domain_dir.exists():
+        return []
 
     domain_forbidden = (
         "fastapi",
@@ -150,6 +151,39 @@ def verify_architecture_layers(root_dir: Path | None = None) -> list[str]:
         "src.infrastructure",
         "src.main",
     )
+
+    for current_root, _, files in os.walk(domain_dir):
+        for file in files:
+            if not file.endswith(".py") or file == "__init__.py":
+                continue
+
+            full_path = Path(current_root) / file
+            rel_path = full_path.relative_to(root).as_posix()
+            tree = parse_ast_safely(full_path)
+            if not tree:
+                continue
+
+            imports = extract_imports(tree)
+            for module_name, lineno, _ in imports:
+                if any(module_name.startswith(pkg) for pkg in domain_forbidden):
+                    errors.append(f"[DOMINIO VIOLADO] {rel_path}:{lineno} importa módulo prohibido '{module_name}'.")
+
+    return errors
+
+
+# ==============================================================================
+# 3. Verificación de Flujo de Capas e Infraestructura (Clean Arch & Thin Controllers)
+# ==============================================================================
+
+
+def verify_application_and_adapters_layers(root_dir: Path | None = None) -> list[str]:
+    """Verifica dependencias en application, adapters y que controllers no importen ORM directo."""
+    root = root_dir or find_project_root()
+    src_dir = root / "src"
+    errors: list[str] = []
+
+    if not src_dir.exists():
+        return []
 
     application_forbidden = (
         "fastapi",
@@ -190,12 +224,7 @@ def verify_architecture_layers(root_dir: Path | None = None) -> list[str]:
 
             imports = extract_imports(tree)
             for module_name, lineno, _ in imports:
-                if "src/domain" in rel_path and any(module_name.startswith(pkg) for pkg in domain_forbidden):
-                    errors.append(f"[DOMINIO VIOLADO] {rel_path}:{lineno} importa módulo prohibido '{module_name}'.")
-
-                elif "src/application" in rel_path and any(
-                    module_name.startswith(pkg) for pkg in application_forbidden
-                ):
+                if "src/application" in rel_path and any(module_name.startswith(pkg) for pkg in application_forbidden):
                     errors.append(f"[APLICACIÓN VIOLADA] {rel_path}:{lineno} importa módulo prohibido '{module_name}'.")
 
                 elif "src/adapters" in rel_path and any(module_name.startswith(pkg) for pkg in adapters_forbidden):
@@ -249,12 +278,12 @@ def verify_no_relative_imports(root_dir: Path | None = None) -> list[str]:
 
 
 # ==============================================================================
-# 4. Verificación de Tipado Estricto en Funciones de Dominio y Aplicación
+# 4. Verificación de Tipado Estricto: Retorno de Funciones (Domain & Application)
 # ==============================================================================
 
 
-def verify_type_annotations(root_dir: Path | None = None) -> list[str]:
-    """Verifica que todas las funciones en domain y application tengan Type Hints explícitos."""
+def verify_function_return_types(root_dir: Path | None = None) -> list[str]:
+    """Verifica que todas las funciones en domain y application especifiquen tipo de retorno explícito."""
     root = root_dir or find_project_root()
     src_dir = root / "src"
     errors: list[str] = []
@@ -286,13 +315,51 @@ def verify_type_annotations(root_dir: Path | None = None) -> list[str]:
                         if func_name.startswith("__") and func_name.endswith("__") and func_name != "__init__":
                             continue
 
-                        # 1. Verificar retorno tipado (excepto __init__)
                         if func_name != "__init__" and node.returns is None:
                             errors.append(
                                 f"[FALTA TYPE HINT RETORNO] {rel_path}:{node.lineno} la función '{func_name}' no especifica tipo de retorno ('-> Type')."
                             )
 
-                        # 2. Verificar argumentos tipados (excepto self y cls)
+    return errors
+
+
+# ==============================================================================
+# 5. Verificación de Tipado Estricto: Parámetros de Funciones (Domain & Application)
+# ==============================================================================
+
+
+def verify_function_arg_types(root_dir: Path | None = None) -> list[str]:
+    """Verifica que todos los argumentos de funciones en domain y application tengan Type Annotation."""
+    root = root_dir or find_project_root()
+    src_dir = root / "src"
+    errors: list[str] = []
+
+    if not src_dir.exists():
+        return []
+
+    target_layers = [src_dir / "domain", src_dir / "application"]
+
+    for layer_dir in target_layers:
+        if not layer_dir.exists():
+            continue
+
+        for current_root, _, files in os.walk(layer_dir):
+            for file in files:
+                if not file.endswith(".py") or file == "__init__.py":
+                    continue
+
+                full_path = Path(current_root) / file
+                rel_path = full_path.relative_to(root).as_posix()
+                tree = parse_ast_safely(full_path)
+                if not tree:
+                    continue
+
+                for node in ast.walk(tree):
+                    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        func_name = node.name
+                        if func_name.startswith("__") and func_name.endswith("__") and func_name != "__init__":
+                            continue
+
                         for arg in node.args.args:
                             if arg.arg in ("self", "cls"):
                                 continue
@@ -300,6 +367,40 @@ def verify_type_annotations(root_dir: Path | None = None) -> list[str]:
                                 errors.append(
                                     f"[FALTA TYPE HINT PARÁMETRO] {rel_path}:{node.lineno} el parámetro '{arg.arg}' en '{func_name}' no tiene type annotation."
                                 )
+
+    return errors
+
+
+# ==============================================================================
+# 8. Verificación de Observabilidad: Cero print() No Estructurado en Producción
+# ==============================================================================
+
+
+def verify_no_unstructured_prints(root_dir: Path | None = None) -> list[str]:
+    """Detecta llamadas a print() directo en el código de producción (src/)."""
+    root = root_dir or find_project_root()
+    src_dir = root / "src"
+    errors: list[str] = []
+
+    if not src_dir.exists():
+        return []
+
+    for current_root, _, files in os.walk(src_dir):
+        for file in files:
+            if not file.endswith(".py"):
+                continue
+
+            full_path = Path(current_root) / file
+            rel_path = full_path.relative_to(root).as_posix()
+            tree = parse_ast_safely(full_path)
+            if not tree:
+                continue
+
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "print":
+                    errors.append(
+                        f"[OBSERVABILIDAD] {rel_path}:{node.lineno} uso de 'print()' en producción. Utilice logging o structlog."
+                    )
 
     return errors
 
@@ -368,6 +469,112 @@ def verify_no_hardcoded_secrets(root_dir: Path | None = None) -> list[str]:
 
 
 # ==============================================================================
+# 2. Verificación de Seguridad OWASP: Cero Concatenación / f-strings en SQL Crudo
+# ==============================================================================
+
+
+def verify_no_raw_sql_formatting(root_dir: Path | None = None) -> list[str]:
+    """Detecta concatenación o formateo de strings en sentencias SQL crudas (text() o .execute())."""
+    root = root_dir or find_project_root()
+    src_dir = root / "src"
+    errors: list[str] = []
+
+    if not src_dir.exists():
+        return []
+
+    for current_root, _, files in os.walk(src_dir):
+        for file in files:
+            if not file.endswith(".py"):
+                continue
+
+            full_path = Path(current_root) / file
+            rel_path = full_path.relative_to(root).as_posix()
+            tree = parse_ast_safely(full_path)
+            if not tree:
+                continue
+
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call):
+                    # Detectar text(f"...") o text("..." % var) o text("...".format(...))
+                    is_text_call = isinstance(node.func, ast.Name) and node.func.id == "text"
+                    if is_text_call and node.args:
+                        first_arg = node.args[0]
+                        if isinstance(first_arg, ast.JoinedStr):
+                            errors.append(
+                                f"[SEGURIDAD SQL] {rel_path}:{node.lineno}: Uso de f-string dentro de text(...). Riesgo de inyección SQL (OWASP). Utilice bind parameters estructurados (:param)."
+                            )
+                        elif isinstance(first_arg, ast.BinOp) and isinstance(first_arg.op, ast.Mod):
+                            errors.append(
+                                f"[SEGURIDAD SQL] {rel_path}:{node.lineno}: Uso de operador '%' dentro de text(...). Riesgo de inyección SQL (OWASP). Utilice bind parameters estructurados (:param)."
+                            )
+                        elif (
+                            isinstance(first_arg, ast.Call)
+                            and isinstance(first_arg.func, ast.Attribute)
+                            and first_arg.func.attr == "format"
+                        ):
+                            errors.append(
+                                f"[SEGURIDAD SQL] {rel_path}:{node.lineno}: Uso de .format() dentro de text(...). Riesgo de inyección SQL (OWASP). Utilice bind parameters estructurados (:param)."
+                            )
+
+    return errors
+
+
+# ==============================================================================
+# 3. Verificación de Gobernanza de Entorno: Cero os.environ / os.getenv fuera de Settings
+# ==============================================================================
+
+
+def verify_no_os_environ_direct_access(root_dir: Path | None = None) -> list[str]:
+    """Exige que las variables de entorno se consuman exclusivamente a través de Settings."""
+    root = root_dir or find_project_root()
+    src_dir = root / "src"
+    errors: list[str] = []
+
+    if not src_dir.exists():
+        return []
+
+    for current_root, _, files in os.walk(src_dir):
+        for file in files:
+            if not file.endswith(".py"):
+                continue
+
+            full_path = Path(current_root) / file
+            rel_path = full_path.relative_to(root).as_posix()
+
+            # Permitir lectura directa de entorno únicamente en el módulo central de Settings
+            if "src/infrastructure/settings/" in rel_path:
+                continue
+
+            tree = parse_ast_safely(full_path)
+            if not tree:
+                continue
+
+            for node in ast.walk(tree):
+                # Detectar os.getenv(...)
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                    if (
+                        isinstance(node.func.value, ast.Name)
+                        and node.func.value.id == "os"
+                        and node.func.attr == "getenv"
+                    ):
+                        errors.append(
+                            f"[GOBERNANZA ENTORNO] {rel_path}:{node.lineno}: Acceso directo a 'os.getenv()'. Centralice la configuración en Settings (src/infrastructure/settings/config.py)."
+                        )
+                # Detectar os.environ[...]
+                elif isinstance(node, ast.Subscript) and isinstance(node.value, ast.Attribute):
+                    if (
+                        isinstance(node.value.value, ast.Name)
+                        and node.value.value.id == "os"
+                        and node.value.attr == "environ"
+                    ):
+                        errors.append(
+                            f"[GOBERNANZA ENTORNO] {rel_path}:{node.lineno}: Acceso directo a 'os.environ'. Centralice la configuración en Settings (src/infrastructure/settings/config.py)."
+                        )
+
+    return errors
+
+
+# ==============================================================================
 # 6. Verificación de Cabecera con Path Relativo (Trazabilidad Canónica)
 # ==============================================================================
 
@@ -395,7 +602,7 @@ def verify_relative_path_headers(root_dir: Path | None = None) -> list[str]:
                     tree = parse_ast_safely(full_path)
                     docstring = ast.get_docstring(tree) if tree else None
                     first_line = ""
-                    with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
+                    with open(full_path, encoding="utf-8", errors="ignore") as f:
                         for line in f:
                             stripped = line.strip()
                             if stripped:
@@ -428,48 +635,89 @@ def verify_relative_path_headers(root_dir: Path | None = None) -> list[str]:
 # ==============================================================================
 
 
-def test_init_files_must_be_empty():
-    """Restricción 1: El 100% de los archivos __init__.py deben tener exactamente 0 bytes."""
-    errors = verify_init_files_empty()
-    assert not errors, f"\n❌ Se detectaron {len(errors)} archivos __init__.py no vacíos:\n\n" + "\n".join(
-        f"  • {err}" for err in errors
-    )
-
-
-def test_clean_architecture_compliance():
-    """Restricción 2: Las dependencias entre capas deben respetar Clean Architecture y DDD."""
-    errors = verify_architecture_layers()
-    assert not errors, f"\n❌ Se detectaron {len(errors)} violaciones de Clean Architecture:\n\n" + "\n".join(
-        f"  • {err}" for err in errors
-    )
-
-
-def test_no_relative_imports():
-    """Restricción 3: Todos los imports en src/ deben ser absolutos ('from src...')."""
-    errors = verify_no_relative_imports()
-    assert not errors, f"\n❌ Se detectaron {len(errors)} imports relativos prohibidos:\n\n" + "\n".join(
-        f"  • {err}" for err in errors
-    )
-
-
-def test_all_functions_have_type_annotations():
-    """Restricción 4: 100% de funciones en domain y application deben tener Type Hints."""
-    errors = verify_type_annotations()
-    assert not errors, f"\n❌ Se detectaron {len(errors)} funciones sin tipado estricto:\n\n" + "\n".join(
-        f"  • {err}" for err in errors
-    )
-
-
 def test_no_hardcoded_secrets():
-    """Restricción 5: Prohibido hardcodear contraseñas, tokens y connection strings en código."""
+    """Restricción 1: Prohibido hardcodear contraseñas, tokens y connection strings en código."""
     errors = verify_no_hardcoded_secrets()
     assert not errors, f"\n❌ Se detectaron {len(errors)} secretos hardcodeados:\n\n" + "\n".join(
         f"  • {err}" for err in errors
     )
 
 
+def test_no_raw_sql_formatting():
+    """Restricción 2: Prohibida concatenación o f-strings en SQL crudo (text()). Riesgo de SQLi."""
+    errors = verify_no_raw_sql_formatting()
+    assert not errors, f"\n❌ Se detectaron {len(errors)} usos inseguros de SQL crudo:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
+    )
+
+
+def test_no_os_environ_direct_access():
+    """Restricción 3: Prohibido acceder a os.environ u os.getenv fuera de Settings."""
+    errors = verify_no_os_environ_direct_access()
+    assert not errors, f"\n❌ Se detectaron {len(errors)} accesos no centralizados al entorno:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
+    )
+
+
+def test_domain_isolation():
+    """Restricción 2: El Core de Dominio no debe depender de frameworks ni I/O."""
+    errors = verify_domain_isolation()
+    assert not errors, f"\n❌ Se detectaron {len(errors)} violaciones de aislamiento de dominio:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
+    )
+
+
+def test_application_and_adapters_layers():
+    """Restricción 3: Las capas de Application, Adapters y Thin Controllers deben respetar Clean Architecture."""
+    errors = verify_application_and_adapters_layers()
+    assert not errors, (
+        f"\n❌ Se detectaron {len(errors)} violaciones de capas en application/adapters:\n\n"
+        + "\n".join(f"  • {err}" for err in errors)
+    )
+
+
+def test_function_return_types():
+    """Restricción 4: 100% de funciones en domain y application deben especificar tipo de retorno explícito."""
+    errors = verify_function_return_types()
+    assert not errors, f"\n❌ Se detectaron {len(errors)} funciones sin tipo de retorno:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
+    )
+
+
+def test_function_arg_types():
+    """Restricción 5: 100% de parámetros en funciones de domain y application deben tener Type Annotations."""
+    errors = verify_function_arg_types()
+    assert not errors, f"\n❌ Se detectaron {len(errors)} parámetros sin tipado:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
+    )
+
+
+def test_init_files_must_be_empty():
+    """Restricción 6: El 100% de los archivos __init__.py deben tener exactamente 0 bytes."""
+    errors = verify_init_files_empty()
+    assert not errors, f"\n❌ Se detectaron {len(errors)} archivos __init__.py no vacíos:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
+    )
+
+
+def test_no_relative_imports():
+    """Restricción 7: Todos los imports en src/ deben ser absolutos ('from src...')."""
+    errors = verify_no_relative_imports()
+    assert not errors, f"\n❌ Se detectaron {len(errors)} imports relativos prohibidos:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
+    )
+
+
+def test_no_unstructured_prints():
+    """Restricción 8: Cero uso de print() no estructurado en producción (src/)."""
+    errors = verify_no_unstructured_prints()
+    assert not errors, f"\n❌ Se detectaron {len(errors)} prints no estructurados:\n\n" + "\n".join(
+        f"  • {err}" for err in errors
+    )
+
+
 def test_relative_path_headers():
-    """Restricción 6: Todo archivo .py (excepto __init__.py) debe comenzar con su ruta relativa."""
+    """Restricción 9: Todo archivo .py (excepto __init__.py) debe comenzar con su ruta relativa."""
     errors = verify_relative_path_headers()
     assert not errors, f"\n❌ Se detectaron {len(errors)} archivos sin cabecera de path relativo:\n\n" + "\n".join(
         f"  • {err}" for err in errors
@@ -488,12 +736,35 @@ def main() -> None:
     print("=" * 70)
 
     suites = [
-        ("1. Archivos __init__.py (0 bytes)", verify_init_files_empty()),
-        ("2. Dependencias de Capas (Clean Architecture)", verify_architecture_layers()),
-        ("3. Imports Absolutos (Prohibidos relativos)", verify_no_relative_imports()),
-        ("4. Tipado Estricto (Domain & Application)", verify_type_annotations()),
-        ("5. Seguridad & Secretos (Cero hardcoded)", verify_no_hardcoded_secrets()),
-        ("6. Cabecera de Path Relativo (Trazabilidad)", verify_relative_path_headers()),
+        ("1. Seguridad & Secretos (Cero hardcoded)", verify_no_hardcoded_secrets()),
+        (
+            "2. Seguridad OWASP: Cero Inyección SQL en text()",
+            verify_no_raw_sql_formatting(),
+        ),
+        (
+            "3. Gobernanza de Entorno: Cero os.environ/getenv fuera de Settings",
+            verify_no_os_environ_direct_access(),
+        ),
+        ("4. Aislamiento de Dominio Puro (Core Agnóstico)", verify_domain_isolation()),
+        (
+            "5. Flujo de Capas e Infraestructura (Clean Arch & Thin Controllers)",
+            verify_application_and_adapters_layers(),
+        ),
+        (
+            "6. Tipado Estricto: Retorno de Funciones (-> Type)",
+            verify_function_return_types(),
+        ),
+        ("7. Tipado Estricto: Parámetros de Funciones", verify_function_arg_types()),
+        ("8. Archivos __init__.py (0 bytes)", verify_init_files_empty()),
+        ("9. Imports Absolutos (Prohibidos relativos)", verify_no_relative_imports()),
+        (
+            "10. Observabilidad: Cero print() No Estructurado",
+            verify_no_unstructured_prints(),
+        ),
+        (
+            "11. Cabecera de Path Relativo (Trazabilidad)",
+            verify_relative_path_headers(),
+        ),
     ]
 
     total_errors: list[str] = []

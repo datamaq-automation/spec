@@ -179,6 +179,44 @@ function isEmptyShellComponent(content, relPath = '') {
   return meaningfulLines.length === 0
 }
 
+
+/** Detecta props declaradas en componentes SFC de Vue que jamás se utilizan. */
+function findUnusedPropsInVueSFC(content, relPath) {
+  const scriptMatch = content.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/);
+  if (!scriptMatch) return [];
+
+  const scriptBody = scriptMatch[1];
+  const templateMatch = content.match(/<template>([\s\S]*?)<\/template>/);
+  const templateBody = templateMatch ? templateMatch[1] : "";
+
+  const propsBlockMatch = scriptBody.match(/(?:interface|type)\s+Props\s*=?\s*\{([^}]+)\}/);
+  if (!propsBlockMatch) return [];
+
+  const propsBlock = propsBlockMatch[1];
+  const propLines = propsBlock.split("\n");
+  const declaredProps = [];
+
+  for (const line of propLines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*")) continue;
+    const match = trimmed.match(/^([a-zA-Z0-9_$]+)\s*\??\s*:/);
+    if (match) {
+      declaredProps.push(match[1]);
+    }
+  }
+
+  const unused = [];
+  for (const prop of declaredProps) {
+    const inTemplate = templateBody.includes(prop);
+    const scriptOccurrences = (scriptBody.match(new RegExp("\\b" + prop + "\\b", "g")) || []).length;
+    if (!inTemplate && scriptOccurrences <= 1) {
+      unused.push(prop);
+    }
+  }
+
+  return unused;
+}
+
 function scanCleanDesign(rootPath = null, minLoc = DEFAULT_MIN_LOC) {
   const root = findProjectRoot(rootPath)
   const srcDir = join(root, 'src')
@@ -259,6 +297,19 @@ function scanCleanDesign(rootPath = null, minLoc = DEFAULT_MIN_LOC) {
     const content = readContent(file)
 
     if (file.endsWith('.vue')) {
+      const unusedProps = findUnusedPropsInVueSFC(content, rel)
+      for (const uProp of unusedProps) {
+        issues.push({
+          code: "UNUSED_PROP",
+          category: "Sobreingeniería",
+          filePath: rel,
+          lineno: 1,
+          symbol: uProp,
+          message: "La propiedad '" + uProp + "' está declarada en defineProps del componente '" + rel + "' pero nunca se utiliza.",
+          suggestion: "Elimine la prop no utilizada de la interfaz de Props para mantener el componente limpio.",
+        })
+      }
+
       if (isEmptyShellComponent(content, rel)) {
         issues.push({
           code: 'EMPTY_SHELL_COMPONENT',
@@ -293,6 +344,7 @@ function scanCleanDesign(rootPath = null, minLoc = DEFAULT_MIN_LOC) {
     unreachableFiles: issues.filter((i) => i.code === 'UNREACHABLE_FILE').length,
     emptyShells: issues.filter((i) => i.code === 'EMPTY_SHELL_COMPONENT').length,
     microFiles: issues.filter((i) => i.code === 'SPECULATIVE_MICRO_FILE').length,
+    unusedProps: issues.filter((i) => i.code === 'UNUSED_PROP').length,
   }
 
   return {
@@ -327,6 +379,7 @@ function main() {
 
   console.log(`   • Archivos Huérfanos (Unreachable):  ${results.summary.unreachableFiles}`)
   console.log(`   • Componentes Cáscara Vacía:        ${results.summary.emptyShells}`)
+  console.log(`   • Propiedades Vue Sin Uso (Unused): ${results.summary.unusedProps}`)
   console.log(`   • Micro-archivos Especulativos:      ${results.summary.microFiles}`)
   console.log('-'.repeat(70))
 

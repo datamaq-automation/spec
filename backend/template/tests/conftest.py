@@ -10,6 +10,7 @@ import pytest
 try:
     from fastapi.testclient import TestClient
     from httpx import ASGITransport, AsyncClient
+
     from src.main import app
 
     HAS_FASTAPI_TEST_DEPS = True

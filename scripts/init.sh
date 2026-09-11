@@ -177,7 +177,8 @@ if [[ "$TYPE" == "backend" ]]; then
     echo "Próximos pasos:"
     echo "  1. cd $TARGET_DIR"
     echo "  2. cp .env.example .env (si es un proyecto nuevo)"
-    echo "  3. pytest tests/test_architecture.py -v"
+    echo "  3. ./run.sh dev        # Levanta el servidor FastAPI en http://localhost:8000"
+    echo "  4. ./run.sh test       # Ejecuta pytest y el Guantelete de Restricciones"
 else
     echo "Próximos pasos:"
     echo "  1. cd $TARGET_DIR"

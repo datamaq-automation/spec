@@ -1,12 +1,21 @@
 """src/main.py — Entrypoint principal de la aplicación FastAPI."""
 
-from __future__ import annotations
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.infrastructure.settings.config import get_settings
 from src.infrastructure.settings.logger import logger
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Ciclo de vida de la aplicación: inicialización y cierre ordenado de recursos."""
+    logger.info("Iniciando aplicación y verificando configuración...")
+    yield
+    logger.info("Cerrando recursos y conexiones de la aplicación...")
 
 
 def create_app() -> FastAPI:
@@ -16,6 +25,7 @@ def create_app() -> FastAPI:
         version=settings.VERSION,
         openapi_url=f"{settings.API_V1_PREFIX}/openapi.json",
         docs_url=f"{settings.API_V1_PREFIX}/docs",
+        lifespan=lifespan,
     )
 
     app.add_middleware(
@@ -35,3 +45,8 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)

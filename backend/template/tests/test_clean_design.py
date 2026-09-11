@@ -171,6 +171,88 @@ def scan_clean_design(
     interface_defs: dict[str, dict[str, Any]] = {}
     inheritance_graph: dict[str, list[str]] = {}
 
+    # 0. Grafo de Alcance (Reachability Graph de Archivos)
+    all_src_files: set[str] = set()
+    for current_root, _, files in os.walk(src_dir):
+        for file in files:
+            if file.endswith(".py") and file != "__init__.py":
+                full_path = Path(current_root) / file
+                rel_path = str(full_path.relative_to(root)).replace("\\", "/")
+                all_src_files.add(rel_path)
+
+    entrypoints: set[str] = set()
+    main_py = src_dir / "main.py"
+    if main_py.exists():
+        entrypoints.add(str(main_py.relative_to(root)).replace("\\", "/"))
+
+    if tests_dir.is_dir():
+        for current_root, _, files in os.walk(tests_dir):
+            for file in files:
+                if file.endswith(".py"):
+                    full_path = Path(current_root) / file
+                    entrypoints.add(str(full_path.relative_to(root)).replace("\\", "/"))
+
+    visited: set[str] = set()
+    queue: list[str] = list(entrypoints)
+
+    def resolve_python_import(module_name: str) -> str | None:
+        if not module_name:
+            return None
+        parts = module_name.split(".")
+        if parts[0] == "src":
+            candidate = root / Path(*parts)
+            py_file = candidate.with_suffix(".py")
+            if py_file.exists():
+                return str(py_file.relative_to(root)).replace("\\", "/")
+            pkg_init = candidate / "__init__.py"
+            if pkg_init.exists():
+                return str(pkg_init.relative_to(root)).replace("\\", "/")
+        return None
+
+    while queue:
+        current_rel = queue.pop(0)
+        if current_rel in visited:
+            continue
+        visited.add(current_rel)
+
+        full_p = root / current_rel
+        if not full_p.exists():
+            continue
+
+        try:
+            c = full_p.read_text(encoding="utf-8")
+            t = ast.parse(c, filename=str(full_p))
+        except Exception:
+            continue
+
+        for node in ast.walk(t):
+            mod_names = []
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    mod_names.append(alias.name)
+            elif isinstance(node, ast.ImportFrom):
+                if node.module:
+                    mod_names.append(node.module)
+
+            for m in mod_names:
+                res = resolve_python_import(m)
+                if res and res not in visited:
+                    queue.append(res)
+
+    for src_rel in all_src_files:
+        if src_rel not in visited:
+            issues.append(
+                DesignIssue(
+                    code="UNREACHABLE_FILE",
+                    category="Código Muerto",
+                    file_path=src_rel,
+                    lineno=1,
+                    symbol=src_rel,
+                    message=f"El archivo '{src_rel}' no es alcanzable desde src/main.py ni desde ninguna suite de tests.",
+                    suggestion="Elimine el archivo si ya no se utiliza o conéctelo al flujo principal de importaciones.",
+                )
+            )
+
     scan_dirs = [src_dir]
     if tests_dir.is_dir():
         scan_dirs.append(tests_dir)
@@ -209,7 +291,7 @@ def scan_clean_design(
     # Chequeo 1: GHOST_INTERFACE (Single-Implementation Abstractions)
     for iface_name, iface_info in interface_defs.items():
         implementations: list[dict[str, Any]] = []
-        for cls_name, cls_list in all_classes.items():
+        for _cls_name, cls_list in all_classes.items():
             for cls_info in cls_list:
                 if iface_name in cls_info["bases"]:
                     implementations.append(cls_info)
@@ -239,9 +321,7 @@ def scan_clean_design(
             return 0
         visited.add(class_name)
         bases = inheritance_graph.get(class_name, [])
-        filtered_bases = [
-            b for b in bases if b not in ("object", "ABC", "Protocol", "BaseModel")
-        ]
+        filtered_bases = [b for b in bases if b not in ("object", "ABC", "Protocol", "BaseModel")]
         if not filtered_bases:
             return 0
         return 1 + max(calculate_dit(b, visited.copy()) for b in filtered_bases)
@@ -284,9 +364,7 @@ def scan_clean_design(
                 top_defs = [
                     n
                     for n in tree.body
-                    if isinstance(
-                        n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
-                    )
+                    if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
                 ]
                 if loc < min_file_loc and len(top_defs) <= 1:
                     issues.append(
@@ -330,9 +408,7 @@ def scan_clean_design(
                 elif isinstance(node, ast.ClassDef):
                     if (
                         node.name.startswith("_")
-                        and not (
-                            node.name.startswith("__") and node.name.endswith("__")
-                        )
+                        and not (node.name.startswith("__") and node.name.endswith("__"))
                         and node.name not in loaded_names
                     ):
                         issues.append(
@@ -348,9 +424,7 @@ def scan_clean_design(
                         )
 
                     for class_node in node.body:
-                        if isinstance(
-                            class_node, (ast.FunctionDef, ast.AsyncFunctionDef)
-                        ):
+                        if isinstance(class_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                             if is_middle_man_method(class_node):
                                 issues.append(
                                     DesignIssue(
@@ -385,6 +459,7 @@ def scan_clean_design(
                                 )
 
     summary = {
+        "unreachable_files": sum(1 for i in issues if i.code == "UNREACHABLE_FILE"),
         "ghost_interfaces": sum(1 for i in issues if i.code == "GHOST_INTERFACE"),
         "middle_man": sum(1 for i in issues if i.code == "MIDDLE_MAN_METHOD"),
         "deep_inheritance": sum(1 for i in issues if i.code == "DEEP_INHERITANCE"),
@@ -452,11 +527,10 @@ def main() -> None:
     print("-" * 70)
 
     summary = results["summary"]
+    print(f"   • Archivos Huérfanos (Unreachable):  {summary['unreachable_files']}")
     print(f"   • Interfaces Fantasma (Single-Impl): {summary['ghost_interfaces']}")
     print(f"   • Métodos Pasamanos (Middle Man):     {summary['middle_man']}")
-    print(
-        f"   • Herencia Profunda (DIT > {args.max_dit}):       {summary['deep_inheritance']}"
-    )
+    print(f"   • Herencia Profunda (DIT > {args.max_dit}):       {summary['deep_inheritance']}")
     print(f"   • Símbolos Privados Huérfanos:       {summary['orphan_symbols']}")
     print(f"   • Micro-archivos Especulativos:       {summary['micro_files']}")
     print("-" * 70)
@@ -468,9 +542,7 @@ def main() -> None:
 
     print("\n⚠️  DETALLE DE VIOLACIONES DETECTADAS:")
     for issue in results["issues"]:
-        print(
-            f"\n[{issue['code']}] {issue['file_path']}:{issue['lineno']} -> {issue['symbol']}"
-        )
+        print(f"\n[{issue['code']}] {issue['file_path']}:{issue['lineno']} -> {issue['symbol']}")
         print(f"   Motivo:     {issue['message']}")
         print(f"   Sugerencia: {issue['suggestion']}")
 
@@ -480,9 +552,7 @@ def main() -> None:
         print("=" * 70)
         sys.exit(1)
     else:
-        print(
-            "💡 Revise las sugerencias anteriores para mantener el diseño simple y desacoplado."
-        )
+        print("💡 Revise las sugerencias anteriores para mantener el diseño simple y desacoplado.")
         print("=" * 70)
         sys.exit(0)
 

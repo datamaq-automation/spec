@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 
 def test_health_endpoint_returns_ok(sync_client) -> None:
     response = sync_client.get("/health")
