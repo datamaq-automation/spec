@@ -7,7 +7,7 @@
 > **Autor(es):** `{autor_o_equipo_responsable}`  
 > **Repositorio / Módulo:** `{organizacion_o_usuario}/{nombre_del_repositorio}`  
 
-> 💡 **Acompañamiento Pedagógico:** Antes de completar esta plantilla, se recomienda consultar la [Guía de Andamiaje Pedagógico y Metacognición](docs/guia-andamiaje-proyectos.md) para reflexionar sobre los problemas de negocio, casos de borde y evitar la sobreingeniería.
+> 💡 **Acompañamiento Pedagógico:** Antes de completar esta plantilla, se recomienda consultar la [Guía de Andamiaje Pedagógico y Metacognición](../docs/guia-andamiaje-proyectos.md) para reflexionar sobre los problemas de negocio, casos de borde y evitar la sobreingeniería.
 
 ---
 
@@ -263,21 +263,27 @@
 
 Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro de un marco de verificación estricto, automatizado y determinista donde ningún código se fusiona a producción sin superar el 100% de los invariantes formales.
 
-### 5.2. Las 6 Baterías del Guantelete (`tests/test_architecture.py`)
-1. **`test_init_files_must_be_empty`:** Comprueba que todos los `__init__.py` en `src/` y `tests/` tengan exactamente 0 bytes (sin código, docstrings ni imports).
-2. **`test_clean_architecture_compliance`:** Valida la regla de dependencia de capas (Domain puro, Application desacoplada, Adapters agnósticos, Routers delgados).
-3. **`test_no_relative_imports`:** Prohíbe imports relativos en `src/` (`from . import ...` o `from .. import ...`), obligando al uso de imports absolutos (`from src...`).
-4. **`test_all_functions_have_type_annotations`:** Exige que el 100% de las funciones en `src/domain` y `src/application` declaren Type Hints en todos sus parámetros y tipo de retorno.
-5. **`test_no_hardcoded_secrets`:** Detecta y bloquea contraseñas, tokens JWT, API keys o connection strings quemadas en código fuente.
-6. **`test_relative_path_headers`:** Exige que todo archivo `.py` en `src/` y `tests/` comience con un docstring o comentario con su ruta relativa exacta (excluyendo `__init__.py` que debe tener 0 bytes).
+### 5.2. Las 11 Baterías del Guantelete (`tests/test_architecture.py`)
+1. **`test_no_hardcoded_secrets`:** Detecta y bloquea contraseñas, tokens JWT, API keys o connection strings quemadas en código fuente.
+2. **`test_no_raw_sql_formatting`:** Prohíbe concatenación de strings o f-strings en `text(...)` para mitigar vectores de SQL Injection (OWASP).
+3. **`test_no_os_environ_direct_access`:** Prohíbe el acceso directo a `os.environ` u `os.getenv` fuera de `src/infrastructure/settings/config.py`.
+4. **`test_domain_isolation`:** Garantiza que el Core de Dominio (`src/domain`) sea 100% puro y no importe frameworks ni librerías de I/O.
+5. **`test_application_and_adapters_layers`:** Valida la regla de dependencia de capas (Application desacoplada, Adapters agnósticos y Thin Controllers sin acceso a ORMs).
+6. **`test_function_return_types`:** Exige que el 100% de las funciones en `src/domain` y `src/application` declaren tipo de retorno explícito (`-> Type`).
+7. **`test_function_arg_types`:** Exige que todos los parámetros de funciones en `domain` y `application` declaren Type Annotations.
+8. **`test_init_files_must_be_empty`:** Comprueba que todos los `__init__.py` en `src/` y `tests/` tengan exactamente 0 bytes (sin código, docstrings ni imports).
+9. **`test_no_relative_imports`:** Prohíbe imports relativos en `src/` (`from . import ...` o `from .. import ...`), obligando al uso de imports absolutos (`from src...`).
+10. **`test_no_unstructured_prints`:** Prohíbe llamadas a `print()` en código de producción (`src/`), exigiendo logging formal.
+11. **`test_relative_path_headers`:** Exige que todo archivo `.py` en `src/` y `tests/` comience con un docstring o comentario con su ruta relativa exacta (excluyendo `__init__.py` que debe tener 0 bytes).
 
 ### 5.3. Detección Determinística de Código Muerto y Sobreingeniería (`tests/test_clean_design.py`)
 Complementando el Guantelete y el detector de Componentes Dios, el archivo `tests/test_clean_design.py` analiza el AST local ($0 tokens) para evitar los sesgos de sobreingeniería y código residual típicos de agentes IA:
-1. **`GHOST_INTERFACE`:** Alerta cuando un `Protocol` o `ABC` tiene solo una implementación concreta en `src/` (y 0 mocks en `tests/`), aplicando YAGNI.
-2. **`MIDDLE_MAN_METHOD`:** Identifica métodos que solo delegan argumentos de forma idéntica en otro objeto sin aportar valor ni lógica.
-3. **`DEEP_INHERITANCE`:** Detecta árboles de herencia con profundidad superior a 2 niveles (`DIT > 2`), promoviendo composición.
-4. **`ORPHAN_PRIVATE_SYMBOL`:** Identifica funciones, clases o métodos privados declarados pero nunca referenciados en el módulo.
-5. **`SPECULATIVE_MICRO_FILE`:** Detecta archivos micro-fragmentados (< 10 LOC) que dispersan el contexto sin justificación.
+1. **`UNREACHABLE_FILE`:** Detecta archivos `.py` huérfanos en `src/` no alcanzables mediante el Grafo de Alcance desde `main.py` ni desde suites de tests.
+2. **`GHOST_INTERFACE`:** Alerta cuando un `Protocol` o `ABC` tiene solo una implementación concreta en `src/` (y 0 mocks en `tests/`), aplicando YAGNI.
+3. **`MIDDLE_MAN_METHOD`:** Identifica métodos que solo delegan argumentos de forma idéntica en otro objeto sin aportar valor ni lógica.
+4. **`DEEP_INHERITANCE`:** Detecta árboles de herencia con profundidad superior a 2 niveles (`DIT > 2`), promoviendo composición.
+5. **`ORPHAN_PRIVATE_SYMBOL`:** Identifica funciones, clases o métodos privados declarados pero nunca referenciados en el módulo.
+6. **`SPECULATIVE_MICRO_FILE`:** Detecta archivos micro-fragmentados (< 10 LOC) que dispersan el contexto sin justificación.
 
 Soporta ejecución humana (`python3 tests/test_clean_design.py`), modo estricto para CI (`--strict`) y salida estructurada para agentes IA (`--json`).
 

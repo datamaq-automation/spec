@@ -8,7 +8,7 @@
 > **Repositorio / Módulo:** `{organizacion_o_usuario}/{nombre_del_repositorio}`
 > **Tipo de Aplicación:** Frontend puro (SPA) — consume APIs externas mediante HTTP; sin SSR ni backend embebido.
 
-> 💡 **Acompañamiento Pedagógico:** Antes de completar esta plantilla, se recomienda consultar la [Guía de Andamiaje Pedagógico y Metacognición](docs/guia-andamiaje-proyectos.md) para reflexionar sobre los problemas de negocio, casos de borde y evitar la sobreingeniería.
+> 💡 **Acompañamiento Pedagógico:** Antes de completar esta plantilla, se recomienda consultar la [Guía de Andamiaje Pedagógico y Metacognición](../docs/guia-andamiaje-proyectos.md) para reflexionar sobre los problemas de negocio, casos de borde y evitar la sobreingeniería.
 
 ---
 
@@ -245,20 +245,28 @@ export default defineConfig({
 
 Bajo este paradigma, el equipo de ingeniería y los agentes de IA operan dentro de un marco de verificación estricto, automatizado y determinista donde ningún código se fusiona a producción sin superar el 100% de los invariantes formales.
 
-### 5.2. Las 7 Baterías del Guantelete (`test_architecture.mjs`)
-1. **`check_layer_dependencies`:** Valida la regla de dependencia de capas FSD (shared puro, core acotado, features desacopladas, app orquestadora).
-2. **`check_no_explicit_any`:** Prohíbe `any`, `@ts-ignore`, `@ts-nocheck` y `@ts-expect-error` en `src/`.
-3. **`check_barrel_control`:** Prohíbe `export *` en cascada fuera de `features/`; el barril de API pública (`export *`) solo se permite en `features/{feature}/index.ts`.
-4. **`check_absolute_imports`:** Prohíbe imports relativos entre capas (`../`), exigiendo alias `@/`.
-5. **`check_no_hardcoded_secrets`:** Detecta y bloquea API keys, tokens JWT o credenciales quemadas en código fuente.
-6. **`check_no_vue_in_core`:** Garantiza que `src/core/` sea 100% TypeScript puro (.ts) prohibiendo componentes `.vue`.
-7. **`check_relative_path_headers`:** Exige que todo archivo `.ts`, `.js`, `.mjs`, `.vue` en `src/`, `scripts/` y `tests/` comience con un comentario indicando su ruta relativa exacta.
+### 5.2. Las 14 Baterías del Guantelete (`test_architecture.mjs`)
+1. **`check_no_hardcoded_secrets`:** Detecta y bloquea API keys, tokens JWT o credenciales quemadas en código fuente.
+2. **`check_no_unsafe_v_html`:** Prohíbe el uso de directivas `v-html` no sanitizadas para prevenir vectores de XSS (OWASP).
+3. **`check_vite_env_prefix`:** Garantiza que las variables de entorno cliente consumidas vía `import.meta.env` cumplan con el prefijo obligatorio `VITE_*`.
+4. **`check_vertical_layer_hierarchy`:** Valida la dirección descendente de capas FSD (app → features → core → shared).
+5. **`check_cross_feature_imports`:** Bloquea acoplamiento horizontal directo entre features (`features/foo` ↛ `features/bar`).
+6. **`check_no_vue_in_core`:** Garantiza que `src/core/` sea 100% TypeScript puro (.ts), prohibiendo componentes `.vue`.
+7. **`check_no_explicit_any`:** Prohíbe terminantemente el tipo `any` explícito (`: any`, `<any>`, `as any`).
+8. **`check_no_type_suppression`:** Bloquea directivas de escape al compilador (`@ts-ignore`, `@ts-nocheck`, `@ts-expect-error`).
+9. **`check_absolute_imports`:** Prohíbe imports relativos entre capas (`../`), exigiendo alias `@/`.
+10. **`check_barrel_control`:** Prohíbe `export *` en cascada fuera de `features/`; el barril de API pública solo se permite en `features/{feature}/index.ts`.
+11. **`check_observability`:** Prohíbe el uso de `console.log` no estructurado en código de producción (`src/`).
+12. **`check_ui_interactive_semantics`:** Exige atributos `role="button"` y `tabindex` en elementos no interactivos (`<div>`, `<span>`) con `@click`.
+13. **`check_a11y_media_accessibility`:** Exige el atributo `alt` en todas las etiquetas `<img>` para compatibilidad con lectores de pantalla.
+14. **`check_relative_path_headers`:** Exige que todo archivo `.ts`, `.js`, `.mjs`, `.vue` en `src/`, `scripts/` y `tests/` comience con un comentario indicando su ruta relativa exacta.
 
 ### 5.3. Detección Determinística de Código Muerto y Sobreingeniería (`scripts/test_clean_design.mjs`)
 Analiza la estructura de la SPA para prevenir deuda técnica y abstracciones prematuras:
 1. **`UNREACHABLE_FILE`:** Detecta archivos huérfanos en `src/` no alcanzables desde `main.ts`, router, `App.vue` ni suites de tests.
 2. **`EMPTY_SHELL_COMPONENT`:** Identifica componentes `.vue` redundantes que solo encapsulan un componente hijo sin lógica, props ni eventos.
-3. **`SPECULATIVE_MICRO_FILE`:** Detecta archivos `.ts` micro-fragmentados (< 8 LOC, excluyendo barriles y `.d.ts`).
+3. **`UNUSED_PROP`:** Identifica propiedades declaradas en `defineProps<{ ... }>` de componentes Vue SFC que jamás son consumidas en la plantilla ni en el script.
+4. **`SPECULATIVE_MICRO_FILE`:** Detecta archivos `.ts` micro-fragmentados (< 8 LOC, excluyendo barriles y `.d.ts`).
 
 Soporta ejecución humana (`node scripts/test_clean_design.mjs` o `npm run audit:clean`), modo estricto para CI (`--strict`) y salida estructurada para agentes IA (`--json`).
 
