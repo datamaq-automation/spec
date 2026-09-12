@@ -1,0 +1,9 @@
+/* styles.css — Hoja de estilos base */
+:root {
+    --primary-color: #2563eb;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}

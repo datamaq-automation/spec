@@ -1,0 +1,3 @@
+[tool.pytest.ini_options]
+testpaths = ["backend/template/tests"]
+addopts = "--import-mode=importlib"

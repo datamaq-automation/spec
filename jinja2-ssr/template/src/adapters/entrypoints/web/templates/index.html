@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-12 text-center">
+    <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
+        Bienvenido a {{ project_name }}
+    </h1>
+    <p class="mt-4 text-lg text-gray-600">
+        Plantilla estándar de Server-Side Rendering (SSR) con FastAPI, Jinja2 y Clean Architecture.
+    </p>
+    <div class="mt-8 flex justify-center gap-4">
+        <a href="/health" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+            Verificar Estado API
+        </a>
+    </div>
+</div>
+{% endblock %}

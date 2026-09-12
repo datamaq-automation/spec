@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title }} - {{ project_name }}{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+    {% include "partials/header.html" %}
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include "partials/footer.html" %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>
